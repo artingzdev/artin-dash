@@ -1,0 +1,115 @@
+/* LOWER GROUND */
+
+#groundLower {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 40vh;
+  transform: translateY(14dvh);
+
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+}
+
+#groundLower::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background-color: var(--ground-color);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+#groundLowerLine {
+  position: absolute;
+  bottom: 40vh;
+  transform: translateY(calc(14dvh + 0.3dvh));
+  width: 100%;
+  height: 0.6dvh;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0), white, rgba(255, 255, 255, 0));
+}
+
+#groundLowerShadowLeft{
+    user-select: none;
+  position: absolute;
+  bottom: 0;
+  width: calc(0.7 * 40vh);
+  height: 40vh;
+  transform: translateY(14dvh);
+  opacity: 0.39;
+}
+
+#groundLowerShadowRight{
+    user-select: none;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: calc(0.7 * 40vh);
+  height: 40vh;
+  /* transform: translateY(14dvh); */
+  rotate: 180deg;
+  translate: 0 14dvh;
+
+  opacity: 0.39;
+}
+
+
+
+
+/* UPPER GROUND */
+
+#groundUpper {
+  position: absolute;
+  /* top: 0; */
+  width: 100%;
+  height: 40vh;
+  transform: translateY(100px);
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+  -webkit-transform: scaleY(-1);
+  -moz-transform: scaleY(-1);
+  -o-transform: scaleY(-1);
+}
+
+#groundUpper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background-color: var(--ground-color);
+  mix-blend-mode: multiply;
+}
+
+#groundUpperLine {
+  position: absolute;
+  top: -0.6dvh;
+  transform: translateY(px);
+  width: 100%;
+  height: 0.6dvh;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0), white, rgba(255, 255, 255, 0));
+}
+
+#groundUpperShadowLeft{
+    user-select: none;
+  position: absolute;
+  top: 0;
+  width: calc(0.7 * 40vh);
+  height: 40vh;
+  /* transform: translateY(14dvh); */
+  opacity: 0.39;
+}
+
+#groundUpperShadowRight{
+    user-select: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: calc(0.7 * 40vh);
+  height: 40vh;
+  transform: translateY(14dvh);
+  rotate: 180deg;
+  translate: 0 14dvh;
+
+  opacity: 0.39;
+}

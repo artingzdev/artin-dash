@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artin Dash</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="grounds.css">
+</head>
+<body>
+    <div id="bg">
+        <div id="gameBg"></div>
+    </div>
+    <div id="mg"></div>
+    <div id="b5"></div>
+    <div id="b4"></div>
+    <div id="b3"></div>
+    <div id="b2"></div>
+    <div id="b1"></div>
+    <div id="p">
+        <canvas id="debug-trail"></canvas>
+        <div id="player">
+            <div id="cube">
+                <img src="resources/cube_glow.png" id="cube-glow" draggable="false"> 
+                <img src="resources/cube.png" draggable="false">
+            </div>
+        </div>
+    </div>
+    <div id="t1"></div>
+    <div id="t2"></div>
+    <div id="t3"></div>
+    <div id="t4"></div>
+    <div id="g">
+        <div id="groundLower"></div>
+        <div id="groundLowerLine"></div>
+        <img id="groundLowerShadowLeft" src="resources/groundSquareShadow_001.png"draggable="false">
+        <img id="groundLowerShadowRight" src="resources/groundSquareShadow_001.png"draggable="false">
+
+        <div id="groundUpper"></div>
+        <div id="groundUpperLine"></div>
+        <img id="groundUpperShadowLeft" src="resources/groundSquareShadow_001.png"draggable="false">
+        <img id="groundUpperShadowRight" src="resources/groundSquareShadow_001.png"draggable="false">
+    </div>
+    <div id="ui"></div>
+    <div id="max"></div>
+    <script src="./js/main.js"></script>
+    <script src="./js/gameBg.js"></script> 
+    <script src="./js/physics.js"></script>
+    <script src="./js/ground.js"></script>
+    <script src="./js/debugTrail.js"></script>
+    <script src="./js/keyEvents.js"></script>
+    <script src="./js/player.js"></script>
+</body>
+</html>
