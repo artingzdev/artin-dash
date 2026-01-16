@@ -87,9 +87,6 @@ function updateGroundY() {
   const matrixArrayStrings = matrixValuesString.split(/,\s*|\s+/); // Splits by commas and/or spaces
   const matrixArray = matrixArrayStrings.map(Number);
   groundY = `${40 - (pixelsToDvh(matrixArray[5]))}dvh`;
-  setPlayerPosition();
-  requestAnimationFrame(updateGroundY);
 }
-requestAnimationFrame(updateGroundY);
 
-resetGrounds();
+//resetGrounds();
