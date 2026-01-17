@@ -1,3 +1,4 @@
+
 const keysPressed = {};
 let leftMouseDown = false;
 let isGroundDouble = false;
@@ -29,6 +30,10 @@ document.addEventListener('keyup', (event) => {
 
     if (event.key === 'y') {
         isSlowModeEnabled = !isSlowModeEnabled;
+    }
+
+    if (event.key == 'Escape') {
+        resetGrounds();
     }
 });
 

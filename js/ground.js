@@ -61,8 +61,6 @@ function setGroundsDistance(distGridSpaces) {
   groundLowerShadowRight.style.transition = `transform ${500 / timeWarp}ms ease-in-out`;
   groundUpperShadowLeft.style.transition = `transform ${500 / timeWarp}ms ease-in-out`;
   groundUpperShadowRight.style.transition = `transform ${500 / timeWarp}ms ease-in-out`;
-  //debugTrail.style.transition = `transform ${500 / timeWarp}ms ease-in-out`;
-  //player.style.transition = 'bottom 500ms ease-in-out';
 
   setPlayerPosition();
 
@@ -80,16 +78,33 @@ function setGroundsDistance(distGridSpaces) {
   groundUpperShadowLeft.style.transform = `translateY(calc(-${pixelsToDvh(groundTranslateAmount)}dvh)`; // update shadow position
   groundUpperShadowRight.style.transform = `translateY(calc(-${pixelsToDvh(groundTranslateAmount)}dvh)) scaleX(-1)`; // update shadow position
 
-  //debugTrail.style.transform = `translateY(${pixelsToDvh(groundTranslateAmount)}dvh)`;
   setPlayerPosition();
-  //groundY = `${pixelsToDvh((window.innerHeight - gridSpacesToPixels(distGridSpaces)) / 2)}dvh`;
 }
 
 function resetGrounds() {
-  // groundUpper.style.display = 'none';
-  // groundUpperLine.style.display = 'none';
-  // groundUpperShadowLeft.display = 'none';
-  // groundUpperShadowRight.display = 'none';
+  const groundResetTimingFunction = 'cubic-bezier(.16,.62,.35,1)';
+  groundLower.style.transition = `transform ${800 / timeWarp}ms ${groundResetTimingFunction}`;
+  groundUpper.style.transition = `transform ${800 / timeWarp}ms ${groundResetTimingFunction}`;
+  groundLowerLine.style.transition = `transform ${800 / timeWarp}ms ${groundResetTimingFunction}`;
+  groundUpperLine.style.transition = `transform ${800 / timeWarp}ms ${groundResetTimingFunction}`;
+  groundLowerShadowLeft.style.transition = `transform ${800 / timeWarp}ms ${groundResetTimingFunction}`;
+  groundLowerShadowRight.style.transition = `transform ${800 / timeWarp}ms ${groundResetTimingFunction}`;
+  groundUpperShadowLeft.style.transition = `transform ${800 / timeWarp}ms ${groundResetTimingFunction}`;
+  groundUpperShadowRight.style.transition = `transform ${800 / timeWarp}ms ${groundResetTimingFunction}`;
+
+  groundLower.style.transform = `translateY(14dvh)`;
+  groundUpper.style.transform = `translateY(-40dvh) scaleY(-1)`;
+  
+  groundLowerLine.style.transform = `translateY(calc(14dvh + 0.3dvh))`;
+  groundUpperLine.style.transform = `translateY(0dvh)`;
+  
+  groundLowerShadowLeft.style.transform = `translateY(14dvh)`
+  groundLowerShadowRight.style.transform = `translateY(14dvh) scaleX(-1)`;
+
+  groundUpperShadowLeft.style.transform = `translateY(-40dvh)`;
+  groundUpperShadowRight.style.transform = `translateY(-40dvh) scaleX(-1)`;
+
+  setPlayerPosition();
 }
 
 function updateGroundY() {
