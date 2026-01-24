@@ -1,4 +1,3 @@
-
 import { Application } from "pixi.js";
 import { scrollSpeed, speed, gameSpeed, speedMultiplier, tickSpeed } from "./game-variables.js";
 import { createGroundContainer } from "./ground.js";
@@ -21,7 +20,6 @@ export const defaultGroundPositionPercentage = (409/512);
 
   const container = document.getElementById("pixi-container");
   container.appendChild(app.canvas);
-
 
   
   // Create containers
