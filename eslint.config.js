@@ -10,8 +10,8 @@ export default [
     languageOptions: {
       globals: {
         ...globals.browser,
-        ...globals.node,      // if you have any node-like code
-        PIXI: "readonly",     // prevents "PIXI is not defined" complaints
+        ...globals.node,
+        PIXI: "readonly",
       },
       ecmaVersion: "latest",
       sourceType: "module",
@@ -22,8 +22,4 @@ export default [
       "no-console": "off",
     },
   },
-
-  // If using TypeScript → add typescript-eslint
-  // (install: npm i -D typescript-eslint)
-  // ...ts.configs.recommended,
 ];
