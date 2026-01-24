@@ -15,12 +15,18 @@
     "pixi-viewport": "^6.0.3"
   },
   "devDependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@eslint/js": "^9.21.0",
+    "esbuild": "^0.27.2",
     "eslint": "^9.21.0",
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-prettier": "^5.2.6",
+    "html-webpack-plugin": "^5.6.6",
     "pixi.js": "^8.15.0",
     "prettier": "^3.5.3",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "webpack": "^5.104.1",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.3"
   }
 }

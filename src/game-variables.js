@@ -1,5 +1,5 @@
 // misc
-export let tickSpeed = .1;
+export let tickSpeed = 1;
 
 
 

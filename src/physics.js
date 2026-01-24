@@ -18,7 +18,7 @@ export let physics = {
     consecutiveJumps: 0,
     playerOffset: 2.5, // in grid spaces
     closestRotation: 0
-}
+} 
 export let jumpVelocityCubeBig =  Math.sqrt(2 * physics.gCubeBig * speed[gameSpeed].jumpHeightCubeBig[0]);
 
 

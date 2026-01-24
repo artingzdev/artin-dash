@@ -1,3 +1,4 @@
+
 import { Application } from "pixi.js";
 import { scrollSpeed, speed, gameSpeed, speedMultiplier, tickSpeed } from "./game-variables.js";
 import { createGroundContainer } from "./ground.js";
@@ -16,11 +17,9 @@ export const defaultGroundPositionPercentage = (409/512);
     resizeTo: window,
     antialias: true,
     roundPixels: true
-    //resolution: window.devicePixelRatio
   });
 
   const container = document.getElementById("pixi-container");
-  //container.innerHTML = "";
   container.appendChild(app.canvas);
 
 
@@ -40,7 +39,11 @@ export const defaultGroundPositionPercentage = (409/512);
   app.stage.addChild(middlegroundContainer);
   app.stage.addChild(playerContainer);
   app.stage.addChild(groundContainer);
-  //app.ticker.speed = tickSpeed;
+  app.ticker.speed = tickSpeed;
+
+  window.addEventListener('resize', () => {
+    app.resizeTo = window;
+  })
 
   app.ticker.add((ticker) => {
     const deltaSeconds = ticker.deltaMS / 1000;
