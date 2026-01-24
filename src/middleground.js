@@ -33,7 +33,8 @@ export async function createMiddlegroundContainer(app) {
         tint: middleground2Color
     });
 
-    // middlegroundSprite.in
+    middlegroundSprite.roundPixels = true;
+    middleground2Sprite.roundPixels = true;
 
     middlegroundSprite.anchor.y = 0;
     middleground2Sprite.anchor.y = 0;

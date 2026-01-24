@@ -1,6 +1,7 @@
 import { app } from './main.js';
 
 export const degToRad = deg => deg * Math.PI / 180;
+export const radToDeg = rad => rad * 180/Math.PI;
 export const dvhToPx = dvh => (dvh/100) * app.screen.height;
 
 export function gridSpacesToPixels(gridSpaces) {

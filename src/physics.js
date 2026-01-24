@@ -1,8 +1,9 @@
 import { gameSpeed, speed } from "./game-variables";
-import { degToRad } from "./utils";
+import { jumpHeld } from "./key-states";
+import { degToRad, radToDeg } from "./utils";
 
 export let physics = {
-    playerY: 5, // in grid spaces
+    playerY: 10, // in grid spaces
     cubeRotation: 0, // in degrees
     v: 0,
     gCubeBig: 86,
@@ -15,7 +16,8 @@ export let physics = {
     cubeRotating: true,
     isJumping: false,
     consecutiveJumps: 0,
-    playerOffset: 2.5 // in grid spaces
+    playerOffset: 2.5, // in grid spaces
+    closestRotation: 0
 }
 export let jumpVelocityCubeBig =  Math.sqrt(2 * physics.gCubeBig * speed[gameSpeed].jumpHeightCubeBig[0]);
 
@@ -45,12 +47,11 @@ export function rotateCube(dt) {
     }
 }
 
-
 export function resetCubeRotation(){
-    if (physics.cubeRotating === false && physics.playerY <= 0 && physics.isJumping == false){
-
-        let closestRotation = Math.round(physics.cubeRotation/90) * 90
-        physics.cubeRotation = closestRotation;
+    if (!physics.cubeRotating && physics.playerY <= 0 && !physics.isJumping && !jumpHeld){
+        const closestRotationDeg = Math.round(radToDeg(physics.cubeRotation) / 90) * 90;
+        physics.cubeRotation = degToRad(closestRotationDeg); // convert back to radians
+        physics.closestRotation = closestRotationDeg; // store for reference
     }
 }
 

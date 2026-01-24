@@ -10,14 +10,18 @@ import { jumpHeld } from "./key-states.js";
 
 export let app = new Application();
 export const defaultGroundPositionPercentage = (409/512);
-
+ 
 (async () => {
   await app.init({
     resizeTo: window,
-    antialias: false,
-    roundPixels: true
+    antialias: true,
+    resolution: window.devicePixelRatio || 1
   });
-  document.getElementById("pixi-container").appendChild(app.canvas);
+
+  // ADD THIS LINE HERE:
+  const container = document.getElementById("pixi-container");
+  container.innerHTML = ""; // Clear old canvas
+  container.appendChild(app.canvas);
 
 
   
