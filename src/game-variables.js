@@ -12,15 +12,15 @@ export let middleground = "01"; // 00 - 03
 
 
 // colors 
-export let groundColor = "#07A300"; // default: 0066ff
+export let groundColor = "#0066ff"; // default: 0066ff
 export let ground2Color = "#0066ff";
-export let backgroundColor = "#06FF00";
-export let middlegroundColor = "#028600";
-export let middleground2Color = "#06FF00";
+export let backgroundColor = "#287DFF";
+export let middlegroundColor = "#287DFF";
+export let middleground2Color = "#287DFF";
 
 export let lineBlendingEnabled = true; //floor line blending
 export let middlegroundBlendingEnabled = false; // mg 1 blending
-export let middleground2BlendingEnabled = false; // mg 2 blending
+export let middleground2BlendingEnabled = true; // mg 2 blending
 
 
 
@@ -65,17 +65,6 @@ export const camera = {
   targetY: 0,
   velocityY: 0,
 
-  x: 0,
-  targetX: 0,
-  velocityX: 0,
-
-  minX: -0.093 * window.innerHeight,      // Leftmost allowed camera X (px)
-  minY: 0      // Lowest allowed camera Y (px)
+  minY: 0,
+  padding: 0.5      // Lowest allowed camera Y (px)
 };
-
-
-
-
-
-// player
-export let playerGravity = 1 // 1 = Normal -1 = Upside-down

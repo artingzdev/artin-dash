@@ -2,6 +2,8 @@ import { Container, Sprite, Assets } from "pixi.js";
 import { degToRad, getRenderedSize, gridSpacesToPixels } from "./utils";
 import { physics } from "./physics";
 
+export let playerX = window.innerWidth / 2 - gridSpacesToPixels(physics.playerOffset);;
+
 export async function createPlayerContainer(app) {
     const playerContainer =  new Container();
     
@@ -13,7 +15,7 @@ export async function createPlayerContainer(app) {
     })
 
     cubeSprite.anchor.set(0.5);
-    cubeSprite.x = app.screen.width / 2 - gridSpacesToPixels(physics.playerOffset);
+    cubeSprite.x = playerX;
     playerContainer.cubeSprite = cubeSprite;
 
     playerContainer.addChild(cubeSprite);

@@ -1,20 +1,23 @@
 import { Application } from "pixi.js";
-import { scrollSpeed, speed, gameSpeed, speedMultiplier, tickSpeed } from "./game-variables.js";
+import { scrollSpeed, speed, gameSpeed, speedMultiplier, tickSpeed, camera, ground } from "./game-variables.js";
 import { createGroundContainer } from "./ground.js";
 import { getRenderedSize, gridSpacesToPixels } from "./utils.js";
 import { createBackgroundContainer } from "./background.js";
 import { createMiddlegroundContainer } from "./middleground.js";
 import { createPlayerContainer } from "./player.js";
 import { jump, physics, resetCubeRotation, rotateCube, updateJumpVelocity, updatePlayerY, } from "./physics.js";
-import { jumpHeld } from "./key-states.js";
+import { gHeld, iHeld, jumpHeld, kHeld, tHeld } from "./key-states.js";
+import { createB1Container, createB2Container, createB3Container, createB4Container, createB5Container, createT1Container, createT2Container, createT3Container, createT4Container, updateCamera } from "./world.js";
 
+export const viewportRatio = window.innerWidth / window.innerHeight;
 
 window.__ARTIN_GEN__ = (window.__ARTIN_GEN__ || 0) + 1;
 const currentGen = window.__ARTIN_GEN__;
 
 export let app = new Application();
-export const defaultGroundPositionPercentage = 409 / 512;
-export let groundY = null;
+export const defaultGroundPositionPercentage = (409 / 512);
+export let groundY = window.innerHeight - getRenderedSize(512 * defaultGroundPositionPercentage);
+let middlegroundInitialY = null;
 
 (async () => {
   await app.init({
@@ -33,6 +36,11 @@ export let groundY = null;
   // remove any leftover canvases from previous instances
   container.replaceChildren();
   container.appendChild(app.canvas);
+
+
+
+
+
 
   // create containers
   const groundContainer = await createGroundContainer(app);
@@ -58,24 +66,74 @@ export let groundY = null;
     return;
   }
 
+  middlegroundInitialY = middlegroundContainer.y;
+
   const playerContainer = await createPlayerContainer(app);
-  if (window.__ARTIN_GEN__ !== currentGen) {
-    app.destroy(true);
-    return;
-  }
+  if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
+
+  const b5Container = await createB5Container(app);
+  if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
+
+  const b4Container = await createB4Container(app);
+  if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
+
+  const b3Container = await createB3Container(app);
+  if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
+
+  const b2Container = await createB2Container(app);
+  if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
+
+  const b1Container = await createB1Container(app);
+  if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
+
+  const t1Container = await createT1Container(app);
+  if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
+
+  const t2Container = await createT2Container(app);
+  if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
+
+  const t3Container = await createT3Container(app);
+  if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
+
+  const t4Container = await createT4Container(app);
+  if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
+
+
+
+
+
+
+
 
   // add the layers in order
   app.stage.addChild(backgroundContainer);
   app.stage.addChild(middlegroundContainer);
+
+  app.stage.addChild(b5Container);
+  app.stage.addChild(b4Container);
+  app.stage.addChild(b3Container);
+  app.stage.addChild(b2Container);
+  app.stage.addChild(b1Container);
+
   app.stage.addChild(playerContainer);
+
+  app.stage.addChild(t1Container);
+  app.stage.addChild(t2Container);
+  app.stage.addChild(t3Container);
+  app.stage.addChild(t4Container);
+
   app.stage.addChild(groundContainer);
   app.ticker.speed = tickSpeed;
 
-  window.addEventListener("resize", () => {
-    if (window.__ARTIN_GEN__ === currentGen) {
-      app.resizeTo = window;
-    }
-  });
+  // window.addEventListener("resize", () => {
+  //   if (window.__ARTIN_GEN__ === currentGen) {
+  //     app.resizeTo = window;
+  //   }
+  // });
+
+  if (physics.playerY >= 0.5){
+    camera.targetY = gridSpacesToPixels(physics.playerY);
+  }
 
   app.ticker.add((ticker) => {
     if (window.__ARTIN_GEN__ !== currentGen) {
@@ -83,25 +141,78 @@ export let groundY = null;
       app.destroy(true);
       return;
     }
-
     const deltaSeconds = ticker.deltaMS / 1000;
+    let scrollAmount = gridSpacesToPixels(scrollSpeed) * deltaSeconds * speed[gameSpeed].game;
 
-    groundContainer.groundSprite.tilePosition.x -= gridSpacesToPixels(scrollSpeed) * deltaSeconds * speed[gameSpeed].game;
-    groundContainer.ground2Sprite.tilePosition.x -= gridSpacesToPixels(scrollSpeed) * deltaSeconds * speed[gameSpeed].game;
-    backgroundContainer.backgroundSprite.tilePosition.x -= gridSpacesToPixels(scrollSpeed) * deltaSeconds * speed[gameSpeed].game * speedMultiplier.background;
-    middlegroundContainer.middlegroundSprite.tilePosition.x -= gridSpacesToPixels(scrollSpeed) * deltaSeconds * speed[gameSpeed].game * speedMultiplier.middlegroundX;
-    middlegroundContainer.middleground2Sprite.tilePosition.x -= gridSpacesToPixels(scrollSpeed) * deltaSeconds * speed[gameSpeed].game * speedMultiplier.middlegroundX;
+    groundContainer.groundSprite.tilePosition.x -= scrollAmount;
+    groundContainer.ground2Sprite.tilePosition.x -= scrollAmount;
+    backgroundContainer.backgroundSprite.tilePosition.x -= scrollAmount * speedMultiplier.background;
+    middlegroundContainer.middlegroundSprite.tilePosition.x -= scrollAmount * speedMultiplier.middlegroundX;
+    middlegroundContainer.middleground2Sprite.tilePosition.x -= scrollAmount * speedMultiplier.middlegroundX;
 
-    playerContainer.cubeSprite.y = groundContainer.y - gridSpacesToPixels(0.5) - gridSpacesToPixels(physics.playerY);
+    //playerContainer.cubeSprite.y = groundY - gridSpacesToPixels(0.5) - gridSpacesToPixels(physics.playerY) + camera.y;
+    // playerContainer.cubeSprite.y = camera.y;
+    updateCamera(deltaSeconds);
     updatePlayerY(deltaSeconds);
     rotateCube(deltaSeconds);
-    //resetCubeRotation(deltaSeconds);
+    resetCubeRotation(deltaSeconds);
     updateJumpVelocity();
     playerContainer.cubeSprite.rotation = physics.cubeRotation;
+
+    b5Container.x -= scrollAmount;
+    b4Container.x -= scrollAmount;
+    b3Container.x -= scrollAmount;
+    b2Container.x -= scrollAmount;
+    b1Container.x -= scrollAmount;
+
+    t1Container.x -= scrollAmount;
+    t2Container.x -= scrollAmount;
+    t3Container.x -= scrollAmount;
+    t4Container.x -= scrollAmount;
+
+    b5Container.y = camera.y;
+    b4Container.y = camera.y;
+    b3Container.y = camera.y;
+    b2Container.y = camera.y;
+    b1Container.y = camera.y;
+
+    t1Container.y = camera.y;
+    t2Container.y = camera.y;
+    t3Container.y = camera.y;
+    t4Container.y = camera.y;
+
+    groundContainer.y = groundY + camera.y;
+    middlegroundContainer.y = middlegroundInitialY + camera.y * speedMultiplier.middlegroundY;
+    backgroundContainer.backgroundSprite.tilePosition.y = camera.y * speedMultiplier.background;
+    playerContainer.cubeSprite.y = groundContainer.y - gridSpacesToPixels(0.5) - gridSpacesToPixels(physics.playerY);
 
     if (jumpHeld) {
       jump();
     }
+
+    // if (iHeld) {
+    //   camera.targetY += 2000 * deltaSeconds;
+    // }
+    // if (kHeld) {
+    //   camera.targetY -= 2000 * deltaSeconds;
+    // }
+
+    if (
+      playerContainer.cubeSprite.y <= window.innerHeight / 2 * camera.padding || // upper bounds
+      playerContainer.cubeSprite.y >= window.innerHeight - (window.innerHeight / 2 * camera.padding) // lower bounds
+    ) { camera.targetY = gridSpacesToPixels(physics.playerY) }
+
+
+    if (tHeld) {
+      if (physics.playerGravity > -1){physics.playerGravity = -1}
+      //physics.gCubeBig = -86;
+    }
+
+    if (gHeld) {
+      if (physics.playerGravity < 1){physics.playerGravity = 1}
+      //physics.gCubeBig = 86;
+    }
+
   });
 })();
 
