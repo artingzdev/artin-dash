@@ -1,7 +1,8 @@
 // ground.js
 import { Container, Assets, TilingSprite, Sprite } from "pixi.js";
-import { ground, groundColor, ground2Color, lineBlendingEnabled } from "./game-variables.js";  // adjust path if needed
+import { gameSettings } from "./game-variables.js";  // adjust path if needed
 import { getRenderedSize } from "./utils.js";
+import { colorChannel } from "./colors.js";
 
 export async function createGroundContainer(app) {
 
@@ -12,8 +13,8 @@ export async function createGroundContainer(app) {
 
 
     // load textures
-  const groundTexture = await Assets.load(`assets/grounds/groundSquare_${ground}_001-uhd.png`);
-  const ground2Texture = await Assets.load(`assets/grounds/groundSquare_${ground}_2_001-uhd.png`);
+  const groundTexture = await Assets.load(`assets/grounds/groundSquare_${gameSettings.ground}_001-uhd.png`);
+  const ground2Texture = await Assets.load(`assets/grounds/groundSquare_${gameSettings.ground}_2_001-uhd.png`);
   const groundSquareShadowLeftTexture = await Assets.load(`assets/groundSquareShadow_001.png`);
   const groundSquareShadowRightTexture = await Assets.load(`assets/groundSquareShadow_2_001.png`);
   const floorLineTexture = await Assets.load("assets/floorLine_01_001-uhd.png");
@@ -26,7 +27,7 @@ export async function createGroundContainer(app) {
     texture: groundTexture,
     width: app.screen.width,
     height: getRenderedSize(groundTexture.height),
-    tint: groundColor,
+    tint: gameSettings.groundColor,
     tileScale: groundTileScale
   });
 
@@ -34,7 +35,7 @@ export async function createGroundContainer(app) {
     texture: ground2Texture,
     width: app.screen.width,
     height: getRenderedSize(ground2Texture.height),
-    tint: ground2Color,
+    tint: gameSettings.ground2Color,
     tileScale: groundTileScale
   });
 
@@ -59,7 +60,7 @@ export async function createGroundContainer(app) {
     height: getRenderedSize(floorLineTexture.height),
   }) 
 
-  floorLineSprite.blendMode = lineBlendingEnabled ? 'add' : 'normal';
+  floorLineSprite.blendMode = colorChannel[1002].blending ? 'add' : 'normal';
 
 
   // add to container
@@ -87,6 +88,21 @@ export async function createGroundContainer(app) {
 
   groundContainer.groundSprite  = groundSprite;
   groundContainer.ground2Sprite = ground2Sprite;
+  groundContainer.floorLineSprite = floorLineSprite;
 
   return groundContainer;
+}
+
+
+
+
+
+
+export async function updateGround(groundContainer) {
+  groundContainer.groundSprite.tint = colorChannel[1001].colorValue;
+  groundContainer.ground2Sprite.tint = colorChannel[1009].colorValue;
+  groundContainer.groundSprite.texture = await Assets.load(`assets/grounds/groundSquare_${gameSettings.ground}_001-uhd.png`);
+  groundContainer.ground2Sprite.texture = await Assets.load(`assets/grounds/groundSquare_${gameSettings.ground}_2_001-uhd.png`);
+  groundContainer.floorLineSprite.blendMode = gameSettings.lineBlendingEnabled ? 'add' : 'normal';
+  groundContainer.floorLineSprite.tint = colorChannel[1002].colorValue;
 }

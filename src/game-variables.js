@@ -1,32 +1,52 @@
-// misc
-export let tickSpeed = 1;
+import { colorChannel } from "./colors";
+
+export const gameSettings = {
+    // misc
+    tickSpeed: 1,
+    // 0 = cube
+    // 1 = ship
+    // 2 = ball
+    // 3 = ufo
+    // 4 = wave
+    // 5 = robot
+    // 6 = spider
+    // 7 = swing
+    gamemode: 0,
+
+    // bools
+    miniMode: 0,
+    dualMode: 0,
+    flipGravity: 0,
+    fadeIn: 0,
+    fadeOut: 0,
+    reverseGameplay: 0,
+    mirrorMode: 0,
+    songOffset: 0, // seconds   
+
+
+    // textures
+    ground: "01", // 01 - 22
+    background: "01", // 01 - 59
+    middleground: "00", // 00 - 03
 
 
 
+    // colors 
+    groundColor: colorChannel[1001].colorValue, // default: 0066ff
+    ground2Color: colorChannel[1009].colorValue,
+    backgroundColor: colorChannel[1000].colorValue,
+    middlegroundColor: colorChannel[1013].colorValue,
+    middleground2Color: colorChannel[1014].colorValue,
 
-// textures
-export let ground = "01"; // 01 - 22
-export let background = "01"; // 01 - 59
-export let middleground = "01"; // 00 - 03
+    gameSpeed: 1, // 0, 1, 2, 3, 4
+    scrollSpeed: 10.3854448 // grid spaces per second
+}
 
 
-
-// colors 
-export let groundColor = "#0066ff"; // default: 0066ff
-export let ground2Color = "#0066ff";
-export let backgroundColor = "#287DFF";
-export let middlegroundColor = "#287DFF";
-export let middleground2Color = "#287DFF";
-
-export let lineBlendingEnabled = true; //floor line blending
-export let middlegroundBlendingEnabled = false; // mg 1 blending
-export let middleground2BlendingEnabled = true; // mg 2 blending
 
 
 
 // speed chart
-export let gameSpeed = 1; // 0, 1, 2, 3, 4
-export const scrollSpeed = 10.3854448; // grid spaces per second
 export const speed = [
     {// half speed ↓
         game: 0.806,

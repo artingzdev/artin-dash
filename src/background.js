@@ -1,4 +1,5 @@
-import { backgroundColor } from "./game-variables";
+import { colorChannel } from './colors.js';
+import { gameSettings } from './game-variables.js';
 import { getRenderedSize } from "./utils";
 import { Container, Assets, TilingSprite } from "pixi.js";
 
@@ -10,7 +11,7 @@ export async function createBackgroundContainer(app) {
 
 
     // load texture
-    const backgroundTexture = await Assets.load(`assets/backgrounds/game_bg_01_001-uhd.png`);
+    const backgroundTexture = await Assets.load(`assets/backgrounds/game_bg_${gameSettings.background}_001-uhd.png`);
 
 
     const backgroundTileScale = 1.7 * getRenderedSize(backgroundTexture.height) / backgroundTexture.height;
@@ -20,7 +21,7 @@ export async function createBackgroundContainer(app) {
         texture: backgroundTexture,
         height: getRenderedSize(backgroundTexture.height) * 1.7,
         width: app.screen.width,
-        tint: backgroundColor,
+        tint: gameSettings.backgroundColor,
         tileScale: backgroundTileScale
     })
 
@@ -32,4 +33,9 @@ export async function createBackgroundContainer(app) {
     // add background sprite to its container
     backgroundContainer.addChild(backgroundSprite);
     return backgroundContainer;
+}
+
+export async function updateBackground(backgroundContainer) {
+  backgroundContainer.backgroundSprite.tint = colorChannel[1000].colorValue;
+  backgroundContainer.backgroundSprite.texture = await Assets.load(`assets/backgrounds/game_bg_${gameSettings.background}_001-uhd.png`);
 }

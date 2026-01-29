@@ -1,13 +1,15 @@
-import { Application } from "pixi.js";
-import { scrollSpeed, speed, gameSpeed, speedMultiplier, tickSpeed, camera, ground } from "./game-variables.js";
-import { createGroundContainer } from "./ground.js";
-import { getRenderedSize, gridSpacesToPixels } from "./utils.js";
-import { createBackgroundContainer } from "./background.js";
-import { createMiddlegroundContainer } from "./middleground.js";
+import { Application, Assets, Particle, ParticleContainer, Rectangle, TilingSprite } from "pixi.js";
+import { speed, speedMultiplier, camera, gameSettings } from "./game-variables.js";
+import { createGroundContainer, updateGround } from "./ground.js";
+import { degToRad, getRenderedSize, gridSpacesToPixels } from "./utils.js";
+import { createBackgroundContainer, updateBackground } from "./background.js";
+import { createMiddlegroundContainer, updateMiddleground } from "./middleground.js";
 import { createPlayerContainer } from "./player.js";
 import { jump, physics, resetCubeRotation, rotateCube, updateJumpVelocity, updatePlayerY, } from "./physics.js";
 import { gHeld, iHeld, jumpHeld, kHeld, tHeld } from "./key-states.js";
 import { createB1Container, createB2Container, createB3Container, createB4Container, createB5Container, createT1Container, createT2Container, createT3Container, createT4Container, updateCamera } from "./world.js";
+import { createPlayerDragEffect } from "./particles.js";
+import { loadLevel } from "./level-creation.js";
 
 export const viewportRatio = window.innerWidth / window.innerHeight;
 
@@ -38,6 +40,9 @@ let middlegroundInitialY = null;
   container.appendChild(app.canvas);
 
 
+
+
+  loadLevel("stereo-madness"); 
 
 
 
@@ -105,6 +110,71 @@ let middlegroundInitialY = null;
 
 
 
+
+
+
+  const particleContainer = new ParticleContainer({
+    boundsArea: new Rectangle(0, 0, app.renderer.width, app.renderer.height),
+  }); // v8-style container using Particle API
+
+  particleContainer.x = app.screen.width / 2;
+  particleContainer.y = app.screen.height / 2;
+  
+
+  const particleTexture = await Assets.load('assets/objects/particles/particle_04_001.png');
+
+  const particles = [];
+  const maxParticles = 30 ;
+
+  function spawnParticle() {
+    if (particles.length >= maxParticles) return;
+
+    //const angle = Math.random() * Math.PI * 2;
+    const angle = -90;
+    const angleVariance = 90
+    const a = Math.floor(Math.random() * (90 - (-90) + 1)) + (-90);;
+    const speed = 50 + Math.random() * 100; // pixels per second
+    const life = 1 + Math.random() * 0.5;   // seconds
+    
+
+    const p = new Particle({
+      texture: particleTexture,
+      alpha: 1,
+      width: getRenderedSize(particleTexture.width),
+      height: getRenderedSize(particleTexture.height)
+    }); // basic particle properties supported by v8 Particle
+
+    p.scaleX = 0.2;
+    p.scaleY = p.scaleX;
+    p.blendMode = 'add';
+    p.anchorX = 0.5;
+    p.anchorY = 0.5;
+
+    p.vx = Math.cos(a) * speed;
+    p.vy = Math.sin(a) * speed;
+    p.life = life;
+    p.age = 0;
+
+    particleContainer.addParticle(p);
+    particles.push(p);
+  }
+
+
+
+
+
+
+
+
+
+
+
+ const playerDragEffect = await createPlayerDragEffect(app);
+  if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
+
+
+
+
   // add the layers in order
   app.stage.addChild(backgroundContainer);
   app.stage.addChild(middlegroundContainer);
@@ -115,6 +185,7 @@ let middlegroundInitialY = null;
   app.stage.addChild(b2Container);
   app.stage.addChild(b1Container);
 
+  //app.stage.addChild(playerDragEffect);
   app.stage.addChild(playerContainer);
 
   app.stage.addChild(t1Container);
@@ -123,7 +194,7 @@ let middlegroundInitialY = null;
   app.stage.addChild(t4Container);
 
   app.stage.addChild(groundContainer);
-  app.ticker.speed = tickSpeed;
+  app.ticker.speed = gameSettings.tickSpeed;
 
   // window.addEventListener("resize", () => {
   //   if (window.__ARTIN_GEN__ === currentGen) {
@@ -135,6 +206,13 @@ let middlegroundInitialY = null;
     camera.targetY = gridSpacesToPixels(physics.playerY);
   }
 
+
+
+
+
+
+
+
   app.ticker.add((ticker) => {
     if (window.__ARTIN_GEN__ !== currentGen) {
       app.ticker.stop();
@@ -142,7 +220,7 @@ let middlegroundInitialY = null;
       return;
     }
     const deltaSeconds = ticker.deltaMS / 1000;
-    let scrollAmount = gridSpacesToPixels(scrollSpeed) * deltaSeconds * speed[gameSpeed].game;
+    let scrollAmount = gridSpacesToPixels(gameSettings.scrollSpeed) * deltaSeconds * speed[gameSettings.gameSpeed].game;
 
     groundContainer.groundSprite.tilePosition.x -= scrollAmount;
     groundContainer.ground2Sprite.tilePosition.x -= scrollAmount;
@@ -198,20 +276,66 @@ let middlegroundInitialY = null;
     // }
 
     if (
-      playerContainer.cubeSprite.y <= window.innerHeight / 2 * camera.padding || // upper bounds
-      playerContainer.cubeSprite.y >= window.innerHeight - (window.innerHeight / 2 * camera.padding) // lower bounds
+      playerContainer.cubeSprite.y <= window.innerHeight / 2 * camera.padding // upper bounds
     ) { camera.targetY = gridSpacesToPixels(physics.playerY) }
+    else if (
+      playerContainer.cubeSprite.y >= window.innerHeight - (window.innerHeight / 2 * camera.padding) // lower bounds
+    ) { camera.targetY = gridSpacesToPixels(physics.playerY) - gridSpacesToPixels(2.9) }
 
 
     if (tHeld) {
       if (physics.playerGravity > -1){physics.playerGravity = -1}
       //physics.gCubeBig = -86;
     }
-
-    if (gHeld) {
+    else {
       if (physics.playerGravity < 1){physics.playerGravity = 1}
-      //physics.gCubeBig = 86;
+      physics.gCubeBig = 86;
     }
+
+    // if (gHeld) {
+    //   if (physics.playerGravity < 1){physics.playerGravity = 1}
+    //   //physics.gCubeBig = 86;
+    // }
+
+
+
+
+
+
+
+
+
+    // emit a few particles each frame
+    for (let i = 0; i < 30; i++) spawnParticle();
+
+    // update particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.age += deltaSeconds;
+      const t = p.age / p.life;
+
+      p.x += p.vx * deltaSeconds;
+      p.y += p.vy * deltaSeconds;
+
+      // fade out over life
+      p.alpha = 1 - t;
+      p.scaleY = p.scaleX;
+
+      if (t >= 1) {
+        particleContainer.removeParticle(p);
+        particles.splice(i, 1);
+      }
+    }
+
+
+
+
+
+
+
+    updateGround(groundContainer);
+    updateBackground(backgroundContainer);
+    updateMiddleground(middlegroundContainer);
 
   });
 })();

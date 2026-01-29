@@ -1,5 +1,5 @@
 import { easeOutCubic } from "./easing";
-import { gameSpeed, speed } from "./game-variables";
+import { gameSettings, speed } from './game-variables.js';
 import { jumpHeld } from "./key-states";
 import { degToRad, radToDeg } from "./utils";
 
@@ -30,7 +30,7 @@ let resetDuration = 0.2; // in seconds (500ms)
 let resetFrom = 0;
 let resetTo = 0;
 
-export let jumpVelocityCubeBig =  Math.sqrt(2 * physics.gCubeBig * speed[gameSpeed].jumpHeightCubeBig[0]);
+export let jumpVelocityCubeBig =  Math.sqrt(2 * physics.gCubeBig * speed[gameSettings.gameSpeed].jumpHeightCubeBig[0]);
 
 export function updatePlayerY(dt) {
 
@@ -135,5 +135,5 @@ export function jump() {
 }
 
 export function updateJumpVelocity(speedIndex = 0){ // speedIndex = initial jump: 0, second jump: 1 (slightly higher)
-    jumpVelocityCubeBig = Math.sqrt(2 * physics.gCubeBig * speed[gameSpeed].jumpHeightCubeBig[speedIndex]);
+    jumpVelocityCubeBig = Math.sqrt(2 * physics.gCubeBig * speed[gameSettings.gameSpeed].jumpHeightCubeBig[speedIndex]);
 }

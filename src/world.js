@@ -50,7 +50,7 @@ export async function createT1Container(app) {
     t1Container.width = app.screen.width;
     t1Container.height = app.screen.height;
 
-    const spikeTexture = await Assets.load('assets/objects/spike_02_001.png');
+    const spikeTexture = await Assets.load('assets/objects/spike_01_001.png');
     const spikeSprite = new Sprite({
         texture: spikeTexture,
         width: getRenderedSize(spikeTexture.width),
@@ -105,7 +105,7 @@ function clampCameraTargets() {
 export function updateCamera(dt) {
   clampCameraTargets();
 
-  const stiffnessY = 100;
+  const stiffnessY = 80;
   const dampingY = 0.8;
 
   let dy = camera.targetY - camera.y;

@@ -12,7 +12,6 @@ dist
 dist-ssr
 *.local
 todo.md
-levels
 
 # Editor directories and files
 .vscode/*
