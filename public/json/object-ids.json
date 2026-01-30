@@ -1,0 +1,38 @@
+{
+    "1": {
+        "name": ["square_01_001"],
+        "glow": ["blockOutline_01_glow_001"]
+    },
+    "2": {
+        "name": ["square_02_001"],
+        "glow": ["blockOutline_05_glow_001"]
+    },
+    "3": {
+        "name": ["square_03_001"],
+        "glow": ["blockOutline_03_glow_001"]
+    },
+    "4": {
+        "name": ["square_04_001"],
+        "glow": ["blockOutline_06_glow_001"]
+    },
+    "5": {
+        "name": ["square_05_001"]
+    },
+    "6": {
+        "name": ["square_06_001"],
+        "glow": ["blockOutline_04_glow_001"]
+    },
+    "7": {
+        "name": ["square_07_001"],
+        "glow": ["blockOutline_custom_01_glow_001"]
+    },
+    "8": {
+        "name": ["spike_01_001"],
+        "glow": ["spike_01_glow_001"]
+    },
+    "9": {
+        "name": ["pit_01_001", "pit_02_001", "pit_03_001"],
+        "c1": "1010",
+        "colorable": false
+    }
+}

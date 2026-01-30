@@ -4,7 +4,7 @@ import { jumpHeld } from "./key-states";
 import { degToRad, radToDeg } from "./utils";
 
 export let physics = {
-    playerY: 10, // in grid spaces
+    playerY: 0, // in grid spaces
     cubeRotation: 0, // in degrees
     v: 0,
     gCubeBig: 86, // blocks per second

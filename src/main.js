@@ -4,12 +4,13 @@ import { createGroundContainer, updateGround } from "./ground.js";
 import { degToRad, getRenderedSize, gridSpacesToPixels } from "./utils.js";
 import { createBackgroundContainer, updateBackground } from "./background.js";
 import { createMiddlegroundContainer, updateMiddleground } from "./middleground.js";
-import { createPlayerContainer } from "./player.js";
+import { createPlayerContainer, playerX } from "./player.js";
 import { jump, physics, resetCubeRotation, rotateCube, updateJumpVelocity, updatePlayerY, } from "./physics.js";
 import { gHeld, iHeld, jumpHeld, kHeld, tHeld } from "./key-states.js";
 import { createB1Container, createB2Container, createB3Container, createB4Container, createB5Container, createT1Container, createT2Container, createT3Container, createT4Container, updateCamera } from "./world.js";
 import { createPlayerDragEffect } from "./particles.js";
-import { loadLevel } from "./level-creation.js";
+import { createLevelObjects, loadLevel } from "./level-creation.js";
+import { loadObjectTextures } from "./objects.js";
 
 export const viewportRatio = window.innerWidth / window.innerHeight;
 
@@ -40,9 +41,6 @@ let middlegroundInitialY = null;
   container.appendChild(app.canvas);
 
 
-
-
-  loadLevel("stereo-madness"); 
 
 
 
@@ -108,6 +106,8 @@ let middlegroundInitialY = null;
 
 
 
+  loadLevel("test"); 
+  createLevelObjects(b5Container, b4Container, b3Container, b2Container, b1Container, t1Container, t2Container, t3Container, t4Container);
 
 
 
@@ -205,13 +205,6 @@ let middlegroundInitialY = null;
   if (physics.playerY >= 0.5){
     camera.targetY = gridSpacesToPixels(physics.playerY);
   }
-
-
-
-
-
-
-
 
   app.ticker.add((ticker) => {
     if (window.__ARTIN_GEN__ !== currentGen) {

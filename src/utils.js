@@ -15,3 +15,10 @@ export function getRenderedSize(pixels) {
     let renderedSize = 0.093 * window.innerHeight * (pixels / 120);
     return renderedSize;
 }
+
+export function randInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}

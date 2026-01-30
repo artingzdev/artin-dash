@@ -1,6 +1,6 @@
 import { colorChannel } from './colors.js';
 import { gameSettings } from './game-variables.js';
-import { getRenderedSize } from "./utils";
+import { getRenderedSize, gridSpacesToPixels } from "./utils";
 import { Container, Assets, TilingSprite } from "pixi.js";
 
 export async function createBackgroundContainer(app) {
@@ -14,19 +14,20 @@ export async function createBackgroundContainer(app) {
     const backgroundTexture = await Assets.load(`assets/backgrounds/game_bg_${gameSettings.background}_001-uhd.png`);
 
 
-    const backgroundTileScale = 1.7 * getRenderedSize(backgroundTexture.height) / backgroundTexture.height;
+    const backgroundTileScale = 1.592 * getRenderedSize(backgroundTexture.height) / backgroundTexture.height;
 
     // create background sprite
     const backgroundSprite = new TilingSprite({
         texture: backgroundTexture,
-        height: getRenderedSize(backgroundTexture.height) * 1.7,
+        height: getRenderedSize(backgroundTexture.height) * 1.592,
         width: app.screen.width,
         tint: gameSettings.backgroundColor,
         tileScale: backgroundTileScale
     })
 
-    backgroundSprite.anchor.y = 1;
-    backgroundContainer.y = app.screen.height + getRenderedSize(240);
+    backgroundSprite.anchor.set(0, 1);
+    backgroundContainer.y = app.screen.height;
+    backgroundSprite.tilePosition.x = gridSpacesToPixels(-16.6195) // value ripped from the game directly using Geode DevTools
     backgroundContainer.backgroundSprite = backgroundSprite;
 
 

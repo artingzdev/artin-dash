@@ -3,6 +3,7 @@ import { colorChannel } from "./colors";
 export const gameSettings = {
     // misc
     tickSpeed: 1,
+    songOffset: 0, // seconds 
     // 0 = cube
     // 1 = ship
     // 2 = ball
@@ -14,14 +15,13 @@ export const gameSettings = {
     gamemode: 0,
 
     // bools
-    miniMode: 0,
-    dualMode: 0,
-    flipGravity: 0,
-    fadeIn: 0,
-    fadeOut: 0,
-    reverseGameplay: 0,
-    mirrorMode: 0,
-    songOffset: 0, // seconds   
+    miniMode: false,
+    dualMode: false,
+    flipGravity: false,
+    fadeIn: false,
+    fadeOut: false,
+    reverseGameplay: false,
+    mirrorMode: false,
 
 
     // textures

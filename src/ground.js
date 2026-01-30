@@ -101,8 +101,15 @@ export async function createGroundContainer(app) {
 export async function updateGround(groundContainer) {
   groundContainer.groundSprite.tint = colorChannel[1001].colorValue;
   groundContainer.ground2Sprite.tint = colorChannel[1009].colorValue;
-  groundContainer.groundSprite.texture = await Assets.load(`assets/grounds/groundSquare_${gameSettings.ground}_001-uhd.png`);
-  groundContainer.ground2Sprite.texture = await Assets.load(`assets/grounds/groundSquare_${gameSettings.ground}_2_001-uhd.png`);
+
+  const groundTexture = await Assets.load(`assets/grounds/groundSquare_${gameSettings.ground}_001-uhd.png`);
+  const ground2Texture = await Assets.load(`assets/grounds/groundSquare_${gameSettings.ground}_2_001-uhd.png`);
+
+  groundContainer.groundSprite.texture = groundTexture;
+  groundContainer.ground2Sprite.texture = ground2Texture;
+
+  groundContainer.ground2Sprite.height = getRenderedSize(ground2Texture.height);
+
   groundContainer.floorLineSprite.blendMode = gameSettings.lineBlendingEnabled ? 'add' : 'normal';
   groundContainer.floorLineSprite.tint = colorChannel[1002].colorValue;
 }

@@ -50,20 +50,6 @@ export async function createT1Container(app) {
     t1Container.width = app.screen.width;
     t1Container.height = app.screen.height;
 
-    const spikeTexture = await Assets.load('assets/objects/spike_01_001.png');
-    const spikeSprite = new Sprite({
-        texture: spikeTexture,
-        width: getRenderedSize(spikeTexture.width),
-        height: getRenderedSize(spikeTexture.height),
-        y: groundY,
-        x: playerX + gridSpacesToPixels(30) // the second part is the object's X position relative to the start of the level 
-    })
-
-    spikeSprite.anchor.y = 1;
-    spikeSprite.anchor.x = 0.5;
-
-    t1Container.addChild(spikeSprite);
-
     return t1Container;
 }
 
