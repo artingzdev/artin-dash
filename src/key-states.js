@@ -1,3 +1,4 @@
+import { gameSettings } from "./game-variables";
 import { physics } from "./physics";
 
 // jump input state
@@ -60,6 +61,10 @@ window.addEventListener("keyup", (e) => {
     }
     else if (e.code === "KeyT") {
         tHeld = false;
+    }
+    if (e.code === "KeyY") {
+        if (gameSettings.tickSpeed === 1) gameSettings.tickSpeed = 0;
+        else gameSettings.tickSpeed = 1
     }
 });
 

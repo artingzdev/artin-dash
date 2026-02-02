@@ -1,19 +1,76 @@
 import { colorChannel } from './colors.js';
 import { gameSettings } from './game-variables.js';
-import { Assets, Sprite } from 'pixi.js';
+import { Assets, Container, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
 import { groundY } from './main.js';
 import { playerX } from './player.js';
-import { degToRad, getRenderedSize, gridSpacesToPixels, randInt } from './utils.js';
+import { degToRad, getGamePlayerColor, getRenderedSize, gridSpacesToPixels, randInt, randSign, setObjectColorChannel } from './utils.js';
 
 
-const levelObjects = [ // example below
+let levelObjects = [ // example below
     // {
-    //     id: 1,
-    //     x: 45,
-    //     y: 15
+    //     id: 1707,
+    //     x: 15,
+    //     y: 15,
+    //     // c1: 9998,
+    //     // c2: 9999,
+    //     r: 0,
+    //     flipH: false,
+    //     flipV: false,
+    //     zLayer: 5
     // },
 ]
 
+export let rotatingObjects = []; // list of rotating decorations in the level along with their rotation speeds
+
+/*  --- OBJECT TYPES ---------
+    0: solid
+    2: hazard
+    3: inverse gravity portal
+    4: normal gravity portal
+    5: ship portal
+    6: cube portal
+    7: decoration
+    8: yellow jump pad
+    9: pink jump pad
+    10: gravity pad
+    11: yellow jump ring
+    12: pink jump ring
+    13: gravity ring
+    14: inverse mirror portal
+    15: normal mirror portal
+    16: ball portal
+    17: regular size portal
+    18: mini size portal
+    19: ufo portal
+    20: modifier
+    21: breakable
+    22: secret coin
+    23: dual portal
+    24: dual off portal
+    25: slope
+    26: wave portal
+    27: robot portal
+    28: teleport portal
+    29: green ring
+    30: collectible
+    31: user coin
+    32: drop ring
+    33: spider portal
+    34: red jump pad
+    35: red jump ring
+    36: custom ring
+    37: dash ring
+    38: gravity dash ring
+    39: collision object
+    40: special
+    41: swing portal
+    42: gravity toggle portal
+    43: spider portal
+    44: spider pad
+    45: enter effect object
+    46: teleport orb
+    47: animated hazard
+*/
 
 
 function getValueOfFirstArrayWithKey(nestedArray, key) {
@@ -29,164 +86,224 @@ let colorString = "";
 
 
 
-
-
-export async function createLevelObjects(b5Container, b4Container, b3Container, b2Container, b1Container, t1Container, t2Container, t3Container, t4Container) {
+export async function createLevelObjects(b5Container, b4Container, b3Container, b2Container, b1Container, t1Container, t2Container, t3Container, t4Container, portalBackContainer) {
+    rotatingObjects = [];
     const jsonIDs = await Assets.load('json/objects.json');
-    // const zLayers = {
 
-    // }
 
-    // -5: B5
-    // -3: B4
-    // -1: B3
-    //  1: B2
-    //  3: B1
 
-    //  5: T1
-    //  7: T2
-    //  9: T3
-    // 11: T4    do this future Artin!
 
+
+    
     for (const object of levelObjects) {
-        if (jsonIDs[object.id]) {
-            if (jsonIDs[object.id].frame !== "none") {
-                //const objectNames = jsonIDs[object.id].name;
-                //const glowNames = jsonIDs[object.id].glow;
-                //const color1 = jsonIDs[object.id].c1;
 
-                let objectTexture = await Assets.load(`assets/objects/${jsonIDs[object.id].frame}`);
-                console.log(object.id, objectTexture)
-                let secondaryTexture = null;
-                if (jsonIDs[object.id].children) {
-                    secondaryTexture = await Assets.load(`assets/objects/${jsonIDs[object.id].children[0].frame}`);
-                }
-                let glowTexture = null;
+        // --------- BASE OBJECT --------------
+        const data = jsonIDs[object.id];
+        if (!data || data.frame === "none") continue;
+        if (data.frame.startsWith('edit')) continue; // hide editor-only objects
 
-                const objectSprite = new Sprite();
-                const secondarySprite = new Sprite();
-                const glowSprite = new Sprite();
+        const scaleX = object.flipH ? -1 : 1;
+        const scaleY = object.flipV ? -1 : 1;
 
-                // if (objectNames.length === 1) {
-                //     objectTexture = await Assets.load(`assets/objects/${objectNames[0]}.png`);
-                // } else {
-                //     const randomIndex = randInt(0, objectNames.length - 1);
-                //     objectTexture = await Assets.load(`assets/objects/${objectNames[randomIndex]}.png`);
-                // }
-                // if (glowNames) {
-                //     if (glowNames.length === 1) {
-                //         glowTexture = await Assets.load(`assets/objects/${glowNames[0]}.png`);
-                //     }     
-                //     glowSprite.texture = glowTexture;
+        const objectContainer = new Container();
+        const portalBackObjectContainer = new Container();
 
-                //     glowSprite.x = playerX + gridSpacesToPixels(object.x / 30);
-                //     glowSprite.y = groundY + gridSpacesToPixels(-object.y / 30);
-                    
-                //     glowSprite.anchor.set (0.5, 0.5)
+        const objectTexture = Texture.from(data.frame);
 
-                //     glowSprite.width = getRenderedSize(glowTexture.width);
-                //     glowSprite.height = getRenderedSize(glowTexture.height);  
-                    
-                //     if (object.r) {glowSprite.rotation = object.r}
-                //     if (object.flipH) {glowSprite.scale.x = -1}
-                // }
+        const objectSprite = new Sprite(objectTexture);
+        if (data.anchor_x || data.anchor_y) {
+            objectSprite.anchor.set(0.5 + data.anchor_x, 0.5 + data.anchor_y);
+        } else {
+            objectSprite.anchor.set(0.5);
+        }
+    
+        objectSprite.cullable = true;
+
+        objectSprite.width  = getRenderedSize(objectTexture.width);
+        objectSprite.height = getRenderedSize(objectTexture.height);
+
+        if (data.rot) objectSprite.rotation = degToRad(data.rot);
+        if (object.r) objectSprite.rotation += degToRad(object.r);
 
 
+        if (data.default_base_color_channel) {
+            setObjectColorChannel(objectSprite, data.default_base_color_channel);
+        }
+        if (data.color_channel) {
+            setObjectColorChannel(objectSprite, data.color_channel);
+        }
+        if (data.color_layer === "1") {
+            if (object.c1 && data.colorable) {
+                setObjectColorChannel(objectSprite, object.c1);
+            }            
+        } else if (data.color_layer === "2") {
+            if (object.c2 && data.colorable) {
+                setObjectColorChannel(objectSprite, object.c2);
+            }   
+        } else {
+            if (object.c1 && data.colorable) {
+                setObjectColorChannel(objectSprite, object.c1);
+            }   
+        }
 
-                objectSprite.texture = objectTexture;
+        // --------- CHILDREN OBJECTS --------------
+        let childrenSprites = [];
 
-                objectSprite.x = playerX + gridSpacesToPixels(object.x / 30);
-                objectSprite.y = groundY + gridSpacesToPixels(-object.y / 30);
+        if (data.children) {  // create the child objects if they exist
+            for (const child of data.children) {
+                let childSprite = null;
+                //const child = data.children[i];
+                const childTexture = Texture.from(child.frame);
+
+                childSprite = new Sprite(childTexture);
+                childSprite.cullable = true;
+
+                childSprite.width  = getRenderedSize(childTexture.width);
+                childSprite.height = getRenderedSize(childTexture.height);
+
+                childSprite.anchor.x = child.anchor_x + 0.5;
+                childSprite.anchor.y = child.anchor_y + 0.5;
+
+                childSprite.zIndex = child.z;
+                if (child.y) childSprite.y -= gridSpacesToPixels(child.y / 30);
+                if (child.x) childSprite.x += gridSpacesToPixels(child.x / 30);
+
+                if (child.flip_x) childSprite.scale.x *= -1;
+                if (child.flip_y) childSprite.scale.y *= -1;
+
+                if (object.r) childSprite.rotation = degToRad(child.rot + object.r);
+                else childSprite.rotation = degToRad(child.rot);
                 
-                objectSprite.anchor.set (0.5, 0.5)
-
-                objectSprite.width = getRenderedSize(objectTexture.width);
-                objectSprite.height = getRenderedSize(objectTexture.height);
-
-                if (object.r) {objectSprite.rotation = object.r}
-                if (object.flipH) {objectSprite.scale.x = -1}
-                if (object.flipV) {objectSprite.scale.y = -1}
-                if (object.c1 && colorChannel[object.c1]) {objectSprite.tint = colorChannel[object.c1].colorValue}
-                if (jsonIDs[object.id].color_channel) {
-                    const channelID = parseInt(jsonIDs[object.id].color_channel);
-                    objectSprite.tint = colorChannel[channelID].colorValue
-                    objectSprite.blendMode = colorChannel[channelID].blending ? 'add' : 'normal';
-                    objectSprite.alpha = colorChannel[channelID].opacity;
-                }
-                else if (jsonIDs[object.id].default_base_color_channel) {
-                    const channelID = parseInt(jsonIDs[object.id].default_base_color_channel)
-                    objectSprite.tint = colorChannel[channelID].colorValue
-                    objectSprite.blendMode = colorChannel[channelID].blending ? 'add' : 'normal';
-                    objectSprite.alpha = colorChannel[channelID].opacity;
+                if (child.default_color_channel) {
+                    setObjectColorChannel(childSprite, child.default_color_channel);
                 }
 
-
-
-
-
-
-
-
-
-                if (jsonIDs[object.id].children) {
-                    secondarySprite.texture = secondaryTexture;
-
-                    secondarySprite.x = playerX + gridSpacesToPixels((object.x + jsonIDs[object.id].children[0].x) / 30);
-                    secondarySprite.y = groundY + gridSpacesToPixels(-(object.y + jsonIDs[object.id].children[0].y) / 30);
-
-                    secondarySprite.anchor.set(0.5, 0.5)
-                    secondarySprite.zIndex = jsonIDs[object.id].children[0].z;
-
-                    if (colorChannel[jsonIDs[object.id].children[0].color_channel]) {secondarySprite.tint = colorChannel[jsonIDs[object.id].children[0].color_channel].colorValue;}
-                    if (object.c2) {secondarySprite.tint = colorChannel[object.c2].colorValue}
-
-                    if (jsonIDs[object.id].children[0].flip_x) {secondarySprite.scale.x = -1}
-                    if (jsonIDs[object.id].children[0].flip_y) {secondarySprite.scale.y = -1}
-
-                    secondarySprite.rotation = degToRad(jsonIDs[object.id].children[0].rot);
-
-                    if (object.r) {secondarySprite.rotation = object.r}
-                    if (object.flipH) {secondarySprite.scale.x = -1}
-                    if (object.flipV) {secondarySprite.scale.y = -1}
+                if (colorChannel[child.color_channel]) {
+                    childSprite.tint = colorChannel[child.color_channel].colorValue;
                 }
-
-
-
-
-
-
-
-
-            
-
-                if (jsonIDs[object.id].default_z_layer === -5) {              b5Container.addChild(glowSprite);    b5Container.addChild(objectSprite);  b5Container.addChild(secondarySprite)    }
-                if (jsonIDs[object.id].default_z_layer === -3) {              b4Container.addChild(glowSprite);    b4Container.addChild(objectSprite);  b4Container.addChild(secondarySprite)    }
-                if (jsonIDs[object.id].default_z_layer === -1) {              b3Container.addChild(glowSprite);    b3Container.addChild(objectSprite);  b3Container.addChild(secondarySprite)    }
-                if (jsonIDs[object.id].default_z_layer === 1) {              b2Container.addChild(glowSprite);    b2Container.addChild(objectSprite);  b2Container.addChild(secondarySprite)    }
-                if (jsonIDs[object.id].default_z_layer === 3) {              b1Container.addChild(glowSprite);    b1Container.addChild(objectSprite);  b1Container.addChild(secondarySprite)    }
-                if (jsonIDs[object.id].default_z_layer === 5) {              t1Container.addChild(glowSprite);    t1Container.addChild(objectSprite);  t1Container.addChild(secondarySprite)    }
-                if (jsonIDs[object.id].default_z_layer === 7) {              t2Container.addChild(glowSprite);    t2Container.addChild(objectSprite);  t2Container.addChild(secondarySprite)    }
-                if (jsonIDs[object.id].default_z_layer === 9) {              t3Container.addChild(glowSprite);    t3Container.addChild(objectSprite);  t3Container.addChild(secondarySprite)    }
-                if (jsonIDs[object.id].default_z_layer === 11) {              t4Container.addChild(glowSprite);    t4Container.addChild(objectSprite);  t4Container.addChild(secondarySprite)    }
-
-                if (object.zLayer === -5) {              b5Container.addChild(glowSprite);    b5Container.addChild(objectSprite);  b5Container.addChild(secondarySprite)    }
-                if (object.zLayer === -3) {              b4Container.addChild(glowSprite);    b4Container.addChild(objectSprite);  b4Container.addChild(secondarySprite)    }
-                if (object.zLayer === -1) {              b3Container.addChild(glowSprite);    b3Container.addChild(objectSprite);  b3Container.addChild(secondarySprite)    }
-                if (object.zLayer === 1) {              b2Container.addChild(glowSprite);    b2Container.addChild(objectSprite);  b2Container.addChild(secondarySprite)    }
-                if (object.zLayer === 3) {              b1Container.addChild(glowSprite);    b1Container.addChild(objectSprite);  b1Container.addChild(secondarySprite)    }
-                if (object.zLayer === 5) {              t1Container.addChild(glowSprite);    t1Container.addChild(objectSprite);  t1Container.addChild(secondarySprite)    }
-                if (object.zLayer === 7) {              t2Container.addChild(glowSprite);    t2Container.addChild(objectSprite);  t2Container.addChild(secondarySprite)    }
-                if (object.zLayer === 9) {              t3Container.addChild(glowSprite);    t3Container.addChild(objectSprite);  t3Container.addChild(secondarySprite)    }
-                if (object.zLayer === 11) {              t4Container.addChild(glowSprite);    t4Container.addChild(objectSprite);  t4Container.addChild(secondarySprite)    }                
+                if (child.color_layer === "1") {
+                    if (object.c1 && child.colorable) {
+                        setObjectColorChannel(childSprite, object.c1);
+                    }
+                } else {
+                    if (object.c2 && child.colorable) {
+                        setObjectColorChannel(childSprite, object.c2);
+                    }
+                }
+                if (child.isglow) {
+                    if (child.color_layer === "1" && object.c1) {
+                        childSprite.tint = colorChannel[object.c1].colorValue;
+                    }
+                    else if (child.color_layer === "2" && object.c2) {
+                        childSprite.tint = colorChannel[object.c2].colorValue;
+                    }
+                    else {
+                        if (child.tint) childSprite.tint = child.tint;
+                        else childSprite.tint = "#FFFFFF";
+                    }
+                    childSprite.alpha = 0.7;
+                    childSprite.blendMode = 'add';   
+                }
+                const frameName = data.frame;
+                if (frameName.startsWith("portal")) {
+                    portalBackObjectContainer.addChild(childSprite);
+                } else{
+                    childrenSprites.push(childSprite);              
+                }
             }
+        }
 
+        // ------------ HITBOXES ----------------------
+        let hitboxContainer = new Container();
+        if (gameSettings.showHitboxes) {
+            if (data.object_type === 0) { // solids
+                const hitboxWidth = gridSpacesToPixels(data.hitbox.size.width / 30);
+                const hitboxHeight = gridSpacesToPixels(data.hitbox.size.height / 30);
+
+                const hitbox = new Graphics()
+                .rect(-hitboxWidth / 2, -hitboxHeight / 2, hitboxWidth, hitboxHeight)
+                .stroke({
+                    color: 0x0000ff,
+                    width: getRenderedSize(gameSettings.hitboxWidth)
+                })
+
+                hitbox.zIndex = 999;
+                hitboxContainer.addChild(hitbox);
+            }
+            else if (data.object_type === 2) { // hazards
+                const hitboxWidth = gridSpacesToPixels(data.hitbox.size.width / 30);
+                const hitboxHeight = gridSpacesToPixels(data.hitbox.size.height / 30);
+
+                const hitbox = new Graphics()
+                .rect(-hitboxWidth / 2, -hitboxHeight / 2, hitboxWidth, hitboxHeight)
+                .stroke({
+                    color: 0xff0000,
+                    width: getRenderedSize(gameSettings.hitboxWidth)
+                })
+
+                hitbox.zIndex = 999;
+                hitboxContainer.addChild(hitbox);
+            }
+        }
+        
+
+        const targetLayer = object.zLayer ?? data.default_z_layer;
+
+        const layerMap = {
+            "-5": b5Container,
+            "-3": b4Container,
+            "-1": b3Container,
+             "1": b2Container,
+             "3": b1Container,
+             "5": t1Container,
+             "7": t2Container,
+             "9": t3Container,
+            "11": t4Container
+        };
+
+        const container = layerMap[targetLayer];
+
+        if (objectContainer) {
+            if (childrenSprites) {
+                childrenSprites.forEach((childSprite) => {
+                    objectContainer.addChild(childSprite);
+                })
+            }
+            objectContainer.addChild(objectSprite);
+            objectContainer.addChild(hitboxContainer);
+        }
+
+        portalBackObjectContainer.x = playerX + gridSpacesToPixels(object.x / 30);
+        portalBackObjectContainer.y = groundY + gridSpacesToPixels(-object.y / 30);
+        if (object.zOrder) portalBackObjectContainer.zIndex = object.zOrder;
+        portalBackObjectContainer.scale.set(scaleX, scaleY);
+
+
+        objectContainer.x = playerX + gridSpacesToPixels(object.x / 30);
+        objectContainer.y = groundY + gridSpacesToPixels(-object.y / 30);
+        if (object.zOrder) objectContainer.zIndex = object.zOrder;
+        objectContainer.scale.set(scaleX, scaleY);
+
+
+        // ---------- ROTATING OBJECTS -------------------
+        if (data.rot_speed) {
+            let objectInfo = [];
+            objectInfo.push(objectContainer, data.rot_speed * randSign());
+            rotatingObjects.push(objectInfo);
+        }
+
+
+        if (container) {
+            const frameName = data.frame;
+            if (frameName.startsWith("portal")) {
+                t1Container.addChild(objectContainer);
+                portalBackContainer.addChild(portalBackObjectContainer);
+            } else {
+                container.addChild(objectContainer);
+            }
         }
     }
 }
-
-
-
-
 
 
 
@@ -254,7 +371,7 @@ try {
         colorsArray.forEach((channel) => {
             channel.forEach(([key, value]) => {
                 if (key === "6") {
-                    if (!["1005", "1006"].includes(value)) {
+                    if (!["1005", "1006", "1010", "1011"].includes(value)) {
 
                         colorChannel[value] = {};
                         colorChannel[value].colorValue = `rgb(${getValueOfFirstArrayWithKey(channel, 1)}, ${getValueOfFirstArrayWithKey(channel, 2)}, ${getValueOfFirstArrayWithKey(channel, 3)})`;
@@ -279,6 +396,7 @@ try {
 
 
         // object creation
+        levelObjects = [];
         objectArray.forEach((object) => {
             const objectProperties = object.split(",");
             const newObject = {};
@@ -289,7 +407,7 @@ try {
                     if (objectProperties[i] === '3') {  newObject.y = parseInt(objectProperties[i + 1])    }
                     if (objectProperties[i] === '4') {  newObject.flipH = true    }
                     if (objectProperties[i] === '5') {  newObject.flipV = true    }
-                    if (objectProperties[i] === '6') {  newObject.r = degToRad(parseInt(objectProperties[i + 1]))    }
+                    if (objectProperties[i] === '6') {  newObject.r = parseInt(objectProperties[i + 1])    }
                     if (objectProperties[i] === '21') {  newObject.c1 = parseInt(objectProperties[i + 1])    }
                     if (objectProperties[i] === '22') {  newObject.c2 = parseInt(objectProperties[i + 1])    }
                     if (objectProperties[i] === '24') {  newObject.zLayer = parseInt(objectProperties[i + 1])     }

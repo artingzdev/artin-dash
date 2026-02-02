@@ -12,7 +12,7 @@ export let physics = {
     terminalVCubeBig: 25.9, // blocks per second
 
     cubeRotationSpeed: 415.8, // deg/s
-    cubeSlopeRotationSpeed: null, // coming soon
+    cubeSlopeRotationSpeed: null, // coming... not very soon
 
     cubeRotating: true,
     isJumping: false,

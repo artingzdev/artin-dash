@@ -45,15 +45,9 @@ def decompress_data(encoded_data):
     return raw_data
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: python script.py <input.gmd>")
-        sys.exit(1)
-    
-    input_file = sys.argv[1]
-    
+    input_file = fileName
 
     encoded = extract_k4_data(input_file)
-    
 
     raw = decompress_data(encoded)
     
@@ -67,6 +61,8 @@ def main():
         f.write(raw)
     
     print(f"Raw data written to {output_file}")
+
+fileName = "test.gmd"
 
 if __name__ == "__main__":
     main()

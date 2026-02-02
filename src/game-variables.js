@@ -2,8 +2,10 @@ import { colorChannel } from "./colors";
 
 export const gameSettings = {
     // misc
-    tickSpeed: 1,
+    tickSpeed: 1, // for testing purposes only
     songOffset: 0, // seconds 
+    showHitboxes: false,
+    hitboxWidth: 3,
     // 0 = cube
     // 1 = ship
     // 2 = ball
@@ -86,5 +88,5 @@ export const camera = {
   velocityY: 0,
 
   minY: 0,
-  padding: 0.5      // Lowest allowed camera Y (px)
+  padding: 0.5
 };

@@ -77,7 +77,13 @@ export async function createT4Container(app) {
     return t4Container;
 }
 
+export async function createPortalBackContainer(app) {
+    const portalBackContainer = new Container();
+    portalBackContainer.width = app.screen.width;
+    portalBackContainer.height = app.screen.height;
 
+    return portalBackContainer;
+}
 
 
 

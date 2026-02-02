@@ -145,12 +145,12 @@ export const colorChannel = {
     },           
     1005: {                                   // player 1
         colorValue: "rgb(125, 255, 0)",
-        blending: false,
+        blending: true,
         opacity: 1,
     },
     1006: {                                   // player 2
         colorValue: "rgb(0, 255, 255)",
-        blending: false,
+        blending: true,
         opacity: 1,
     },
     1007: {                                   // light background
@@ -189,4 +189,15 @@ export const colorChannel = {
         blending: false,
         opacity: 1,
     },
+    9998: {                                 // for testing
+        colorValue: "rgb(0, 255, 98)",
+        blending: false,
+        opacity: 1,
+    },
+    9999: {                                 // for testing
+        colorValue: "rgb(255, 40, 40)",
+        blending: false,
+        opacity: 1,
+    }
+
 }

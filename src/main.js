@@ -1,15 +1,15 @@
-import { Application, Assets, Particle, ParticleContainer, Rectangle, TilingSprite } from "pixi.js";
+import { Application, Assets, Graphics, Particle, ParticleContainer, Rectangle, TilingSprite } from "pixi.js";
 import { speed, speedMultiplier, camera, gameSettings } from "./game-variables.js";
 import { createGroundContainer, updateGround } from "./ground.js";
-import { degToRad, getRenderedSize, gridSpacesToPixels } from "./utils.js";
+import { degToRad, getRenderedSize, gridSpacesToPixels, randSign } from "./utils.js";
 import { createBackgroundContainer, updateBackground } from "./background.js";
 import { createMiddlegroundContainer, updateMiddleground } from "./middleground.js";
 import { createPlayerContainer, playerX } from "./player.js";
 import { jump, physics, resetCubeRotation, rotateCube, updateJumpVelocity, updatePlayerY, } from "./physics.js";
 import { gHeld, iHeld, jumpHeld, kHeld, tHeld } from "./key-states.js";
-import { createB1Container, createB2Container, createB3Container, createB4Container, createB5Container, createT1Container, createT2Container, createT3Container, createT4Container, updateCamera } from "./world.js";
+import { createB1Container, createB2Container, createB3Container, createB4Container, createB5Container, createPortalBackContainer, createT1Container, createT2Container, createT3Container, createT4Container, updateCamera } from "./world.js";
 import { createPlayerDragEffect } from "./particles.js";
-import { createLevelObjects, loadLevel } from "./level-creation.js";
+import { createLevelObjects, loadLevel, rotatingObjects } from "./level-creation.js";
 import { loadObjectTextures } from "./objects.js";
 
 export const viewportRatio = window.innerWidth / window.innerHeight;
@@ -101,14 +101,24 @@ let middlegroundInitialY = null;
   const t4Container = await createT4Container(app);
   if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
 
+  const portalBackContainer = await createPortalBackContainer(app);
+  if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
 
 
 
 
+
+  const spriteSheets = [
+    'assets/GJ_GameSheet-uhd.json',
+    'assets/GJ_GameSheet02-uhd.json',
+    'assets/GJ_GameSheetGlow-uhd.json'
+  ];
+
+await Assets.load(spriteSheets);
+  if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
 
   loadLevel("test"); 
-  createLevelObjects(b5Container, b4Container, b3Container, b2Container, b1Container, t1Container, t2Container, t3Container, t4Container);
-
+  createLevelObjects(b5Container, b4Container, b3Container, b2Container, b1Container, t1Container, t2Container, t3Container, t4Container, portalBackContainer);
 
 
 
@@ -184,6 +194,7 @@ let middlegroundInitialY = null;
   app.stage.addChild(b3Container);
   app.stage.addChild(b2Container);
   app.stage.addChild(b1Container);
+  app.stage.addChild(portalBackContainer); // only for portals
 
   //app.stage.addChild(playerDragEffect);
   app.stage.addChild(playerContainer);
@@ -194,7 +205,19 @@ let middlegroundInitialY = null;
   app.stage.addChild(t4Container);
 
   app.stage.addChild(groundContainer);
-  app.ticker.speed = gameSettings.tickSpeed;
+
+  let levelLayers = [
+    b5Container,
+    b4Container,
+    b3Container,
+    b2Container,
+    b1Container,
+    t1Container,
+    t2Container,
+    t3Container,
+    t4Container
+  ]
+  
 
   // window.addEventListener("resize", () => {
   //   if (window.__ARTIN_GEN__ === currentGen) {
@@ -206,12 +229,15 @@ let middlegroundInitialY = null;
     camera.targetY = gridSpacesToPixels(physics.playerY);
   }
 
+
+
   app.ticker.add((ticker) => {
     if (window.__ARTIN_GEN__ !== currentGen) {
       app.ticker.stop();
       app.destroy(true);
       return;
     }
+    app.ticker.speed = gameSettings.tickSpeed;
     const deltaSeconds = ticker.deltaMS / 1000;
     let scrollAmount = gridSpacesToPixels(gameSettings.scrollSpeed) * deltaSeconds * speed[gameSettings.gameSpeed].game;
 
@@ -240,6 +266,7 @@ let middlegroundInitialY = null;
     t2Container.x -= scrollAmount;
     t3Container.x -= scrollAmount;
     t4Container.x -= scrollAmount;
+    portalBackContainer.x -= scrollAmount;
 
     b5Container.y = camera.y;
     b4Container.y = camera.y;
@@ -251,6 +278,13 @@ let middlegroundInitialY = null;
     t2Container.y = camera.y;
     t3Container.y = camera.y;
     t4Container.y = camera.y;
+    portalBackContainer.y = camera.y;
+
+    for (const objectInfo of rotatingObjects) {
+      let object = objectInfo[0];
+      let rotationSpeed = objectInfo[1];
+      object.rotation += degToRad(rotationSpeed) * deltaSeconds;
+    }
 
     groundContainer.y = groundY + camera.y;
     middlegroundContainer.y = middlegroundInitialY + camera.y * speedMultiplier.middlegroundY;
@@ -260,13 +294,6 @@ let middlegroundInitialY = null;
     if (jumpHeld) {
       jump();
     }
-
-    // if (iHeld) {
-    //   camera.targetY += 2000 * deltaSeconds;
-    // }
-    // if (kHeld) {
-    //   camera.targetY -= 2000 * deltaSeconds;
-    // }
 
     if (
       playerContainer.cubeSprite.y <= window.innerHeight / 2 * camera.padding // upper bounds
@@ -278,17 +305,11 @@ let middlegroundInitialY = null;
 
     if (tHeld) {
       if (physics.playerGravity > -1){physics.playerGravity = -1}
-      //physics.gCubeBig = -86;
     }
     else {
       if (physics.playerGravity < 1){physics.playerGravity = 1}
       physics.gCubeBig = 86;
     }
-
-    // if (gHeld) {
-    //   if (physics.playerGravity < 1){physics.playerGravity = 1}
-    //   //physics.gCubeBig = 86;
-    // }
 
 
 
@@ -319,6 +340,8 @@ let middlegroundInitialY = null;
         particles.splice(i, 1);
       }
     }
+
+
 
 
 

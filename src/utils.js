@@ -1,3 +1,5 @@
+import { colorChannel } from './colors.js';
+import { camera } from './game-variables.js';
 import { app } from './main.js';
 
 export const degToRad = deg => deg * Math.PI / 180;
@@ -21,4 +23,49 @@ export function randInt(min, max) {
     max = Math.floor(max);
     
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function randSign() { return Math.random() < 0.5 ? -1 : 1 }
+
+export function lerp(a, b, t) {
+    return a + (b - a) * t
+}
+
+export function getGamePlayerColor(pUsed) {
+    const p1 = colorChannel[1005].colorValue;
+    const p2 = colorChannel[1006].colorValue;
+    const black = "rgb(0, 0, 0)";
+
+    if (p1 === black & p2 === black) return "rgb(255, 255, 255)";
+    else if (pUsed === p1 && p1 === black) return p2;
+    else if (pUsed === p2 && p2 === black) return p1;
+    else return pUsed;
+}
+
+export function setObjectColorChannel(object, channelID) {
+    if (!colorChannel[channelID]) return;
+
+
+
+    if (channelID === 1005 || channelID === 1006) {
+        object.tint = getGamePlayerColor(colorChannel[channelID].colorValue);
+    } else {
+        object.tint = colorChannel[channelID].colorValue
+    }
+    object.blendMode = colorChannel[channelID].blending ? 'add' : 'normal';
+    object.alpha = colorChannel[channelID].opacity;
+}
+
+export function easeInOut(a, b, t, e) {
+    t *= 2
+    
+    let eased;
+
+    if (t < 1) {
+        eased = Math.pow(t, e) / 2
+    } else {
+        eased = 1 - Math.pow(2 - t, e) / 2
+    }
+
+    return a + (b - a) * eased;
 }
