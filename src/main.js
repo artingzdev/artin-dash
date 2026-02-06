@@ -5,11 +5,11 @@ import { degToRad, getRenderedSize, gridSpacesToPixels, randSign } from "./utils
 import { createBackgroundContainer, updateBackground } from "./background.js";
 import { createMiddlegroundContainer, updateMiddleground } from "./middleground.js";
 import { createPlayerContainer, playerX } from "./player.js";
-import { jump, physics, resetCubeRotation, rotateCube, updateJumpVelocity, updatePlayerY, } from "./physics.js";
+import { getCollisionSide, jump, physics, playerHitboxes, resetCubeRotation, rotateCube, updateJumpVelocity, updatePlayerY, } from "./physics.js";
 import { gHeld, iHeld, jumpHeld, kHeld, tHeld } from "./key-states.js";
 import { createB1Container, createB2Container, createB3Container, createB4Container, createB5Container, createPortalBackContainer, createT1Container, createT2Container, createT3Container, createT4Container, updateCamera } from "./world.js";
 import { createPlayerDragEffect } from "./particles.js";
-import { createLevelObjects, loadLevel, rotatingObjects } from "./level-creation.js";
+import { createLevelObjects, levelObjects, loadLevel, rotatingObjects } from "./level-creation.js";
 import { loadObjectTextures } from "./objects.js";
 
 export const viewportRatio = window.innerWidth / window.innerHeight;
@@ -22,10 +22,19 @@ export const defaultGroundPositionPercentage = (409 / 512);
 export let groundY = window.innerHeight - getRenderedSize(512 * defaultGroundPositionPercentage);
 let middlegroundInitialY = null;
 
+export let gameState = {
+  changeLevel: true
+};
+
+export function setLevel(levelName) {
+  gameState.changeLevel = true
+  loadLevel(levelName);
+}
+
 (async () => {
   await app.init({
     resizeTo: window,
-    antialias: true,
+    antialias: false,
     roundPixels: true,
   });
 
@@ -116,9 +125,6 @@ let middlegroundInitialY = null;
 
 await Assets.load(spriteSheets);
   if (window.__ARTIN_GEN__ !== currentGen) { app.destroy(true); return; }
-
-  loadLevel("test"); 
-  createLevelObjects(b5Container, b4Container, b3Container, b2Container, b1Container, t1Container, t2Container, t3Container, t4Container, portalBackContainer);
 
 
 
@@ -229,7 +235,35 @@ await Assets.load(spriteSheets);
     camera.targetY = gridSpacesToPixels(physics.playerY);
   }
 
+  let lastPlayerY = physics.playerY;
+  let scrolled = 0; // px
 
+  function drawHitboxCorners(graphics, hitbox, color = 0xff0000) {
+  const size = 4; // pixel size of point
+
+  graphics.beginFill(color);
+
+  // top-left
+  graphics.drawRect(hitbox.left - size / 2, hitbox.top - size / 2, size, size);
+
+  // top-right
+  graphics.drawRect(hitbox.right - size / 2, hitbox.top - size / 2, size, size);
+
+  // bottom-right
+  graphics.drawRect(hitbox.right - size / 2, hitbox.bottom - size / 2, size, size);
+
+  // bottom-left
+  graphics.drawRect(hitbox.left - size / 2, hitbox.bottom - size / 2, size, size);
+
+  graphics.endFill();
+}
+
+
+  const hitboxDebugGraphics = new Graphics();
+  app.stage.addChild(hitboxDebugGraphics);
+
+  loadLevel("test"); 
+  createLevelObjects(b5Container, b4Container, b3Container, b2Container, b1Container, t1Container, t2Container, t3Container, t4Container, portalBackContainer, app);
 
   app.ticker.add((ticker) => {
     if (window.__ARTIN_GEN__ !== currentGen) {
@@ -241,14 +275,15 @@ await Assets.load(spriteSheets);
     const deltaSeconds = ticker.deltaMS / 1000;
     let scrollAmount = gridSpacesToPixels(gameSettings.scrollSpeed) * deltaSeconds * speed[gameSettings.gameSpeed].game;
 
+    const deltaPlayerY = physics.playerY - lastPlayerY; // player height difference since last tick (grid spaces)
+    lastPlayerY = physics.playerY;
+
     groundContainer.groundSprite.tilePosition.x -= scrollAmount;
     groundContainer.ground2Sprite.tilePosition.x -= scrollAmount;
     backgroundContainer.backgroundSprite.tilePosition.x -= scrollAmount * speedMultiplier.background;
     middlegroundContainer.middlegroundSprite.tilePosition.x -= scrollAmount * speedMultiplier.middlegroundX;
     middlegroundContainer.middleground2Sprite.tilePosition.x -= scrollAmount * speedMultiplier.middlegroundX;
 
-    //playerContainer.cubeSprite.y = groundY - gridSpacesToPixels(0.5) - gridSpacesToPixels(physics.playerY) + camera.y;
-    // playerContainer.cubeSprite.y = camera.y;
     updateCamera(deltaSeconds);
     updatePlayerY(deltaSeconds);
     rotateCube(deltaSeconds);
@@ -280,6 +315,8 @@ await Assets.load(spriteSheets);
     t4Container.y = camera.y;
     portalBackContainer.y = camera.y;
 
+    scrolled -= scrollAmount;
+
     for (const objectInfo of rotatingObjects) {
       let object = objectInfo[0];
       let rotationSpeed = objectInfo[1];
@@ -291,16 +328,109 @@ await Assets.load(spriteSheets);
     backgroundContainer.backgroundSprite.tilePosition.y = camera.y * speedMultiplier.background;
     playerContainer.cubeSprite.y = groundContainer.y - gridSpacesToPixels(0.5) - gridSpacesToPixels(physics.playerY);
 
+
+
+    // update player hitboxes
+    const cubeYPos = playerContainer.cubeSprite.y;
+    const cubeXPos = playerContainer.cubeSprite.x
+
+    if (gameSettings.gamemode != 4 && gameSettings.gamemode != 6) { // every hitbox is the same except for spider and wave
+      playerHitboxes[gameSettings.gamemode].top = cubeYPos - gridSpacesToPixels(.5);
+      playerHitboxes[gameSettings.gamemode].bottom = cubeYPos + gridSpacesToPixels(.5);
+      playerHitboxes[gameSettings.gamemode].left = cubeXPos - gridSpacesToPixels(.5);
+      playerHitboxes[gameSettings.gamemode].right = cubeXPos + gridSpacesToPixels(.5);      
+    }
+
+    hitboxDebugGraphics.clear();
+    const playerHitbox = playerHitboxes[gameSettings.gamemode];
+
+    if (playerHitbox && gameSettings.showDebugCorners) {
+      drawHitboxCorners(hitboxDebugGraphics, playerHitbox, 0x00ffff);
+    }
+
+    physics.isOnABlock = false;
+    for (const layer of levelLayers) {
+      let objectContainers = layer.children;
+      for (let i = 0; i < objectContainers.length; i ++) {
+
+        if (objectContainers[i].type === 0) {
+
+
+
+          const objTop = objectContainers[i].top + camera.y;
+          const objBottom = objectContainers[i].bottom + camera.y;
+          const objLeft = (objectContainers[i].left -= scrollAmount) - gridSpacesToPixels(0.97);
+          const objRight = (objectContainers[i].right -= scrollAmount) - gridSpacesToPixels(0.97);
+
+          // const objTop = objectContainers[i].getBounds().top + camera.y;
+          // const objBottom =  objectContainers[i].getBounds().bottom + camera.y;
+          // const objLeft =  objectContainers[i].getBounds().left - scrollAmount;
+          // const objRight =  objectContainers[i].getBounds().right - scrollAmount;
+
+          if (gameSettings.showDebugCorners) {drawHitboxCorners(hitboxDebugGraphics, 
+            {
+              top: objTop,
+              bottom: objBottom,
+              left: objLeft,
+              right: objRight
+            }
+            , 0xff0000);
+          }
+
+          const collision = getCollisionSide(
+            playerHitboxes[gameSettings.gamemode],
+            {
+              top: objTop,
+              bottom: objBottom,
+              left: objLeft,
+              right: objRight
+            }
+          );
+
+          if (collision) {
+            if (collision[0] === "bottom") {
+              physics.collidedObjectRenderedTop = objTop;
+              physics.isOnABlock = true;
+            }
+            else if (collision[0] === "right" || collision[0] === "left") {
+              console.log("t'as die")
+            }
+          }   
+                 
+        }
+
+      }
+    } 
+
+
+
+
+
+
+
+
+
     if (jumpHeld) {
       jump();
     }
 
-    if (
-      playerContainer.cubeSprite.y <= window.innerHeight / 2 * camera.padding // upper bounds
-    ) { camera.targetY = gridSpacesToPixels(physics.playerY) }
+    
+
+    if (physics.playerY <= 0 && camera.targetY !== 0) {
+      camera.targetY = 0;
+      physics.snappingToGround = true;
+    }
     else if (
-      playerContainer.cubeSprite.y >= window.innerHeight - (window.innerHeight / 2 * camera.padding) // lower bounds
-    ) { camera.targetY = gridSpacesToPixels(physics.playerY) - gridSpacesToPixels(2.9) }
+      playerContainer.cubeSprite.y <= window.innerHeight / 2 * camera.padding
+    ) {
+      camera.targetY += gridSpacesToPixels(deltaPlayerY);
+    }
+    else if (
+      playerContainer.cubeSprite.y >= window.innerHeight - (window.innerHeight / 2 * camera.padding)
+    ) {
+      camera.targetY += gridSpacesToPixels(deltaPlayerY);
+    }
+
 
 
     if (tHeld) {
@@ -311,8 +441,40 @@ await Assets.load(spriteSheets);
       physics.gCubeBig = 86;
     }
 
-
-
+    if (gameState.changeLevel) {
+      createLevelObjects(b5Container, b4Container, b3Container, b2Container, b1Container, t1Container, t2Container, t3Container, t4Container, portalBackContainer, app);
+      b5Container.removeChildren().forEach(child => {
+      child.destroy({ children: true, texture: true, baseTexture: true });
+      });
+            b4Container.removeChildren().forEach(child => {
+        child.destroy({ children: true, texture: true, baseTexture: true });
+      });
+            b3Container.removeChildren().forEach(child => {
+        child.destroy({ children: true, texture: true, baseTexture: true });
+      });
+            b2Container.removeChildren().forEach(child => {
+        child.destroy({ children: true, texture: true, baseTexture: true });
+      });
+            b1Container.removeChildren().forEach(child => {
+        child.destroy({ children: true, texture: true, baseTexture: true });
+      });
+            portalBackContainer.removeChildren().forEach(child => {
+        child.destroy({ children: true, texture: true, baseTexture: true });
+      });
+            t1Container.removeChildren().forEach(child => {
+        child.destroy({ children: true, texture: true, baseTexture: true });
+      });
+            t2Container.removeChildren().forEach(child => {
+        child.destroy({ children: true, texture: true, baseTexture: true });
+      });
+            t3Container.removeChildren().forEach(child => {
+        child.destroy({ children: true, texture: true, baseTexture: true });
+      });
+            t4Container.removeChildren().forEach(child => {
+        child.destroy({ children: true, texture: true, baseTexture: true });
+      });
+      gameState.changeLevel = false;
+    }
 
 
 
@@ -356,6 +518,6 @@ await Assets.load(spriteSheets);
   });
 })();
 
-if (import.meta.hot) {
-  import.meta.hot.accept();
-}
+// if (import.meta.hot) {
+//   import.meta.hot.accept();
+// }

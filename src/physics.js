@@ -1,13 +1,15 @@
-import { easeOutCubic } from "./easing";
-import { gameSettings, speed } from './game-variables.js';
+import { easeOutQuad } from "./easing";
+import { camera, gameSettings, speed } from './game-variables.js';
 import { jumpHeld } from "./key-states";
-import { degToRad, radToDeg } from "./utils";
+import { defaultGroundPositionPercentage } from "./main.js";
+import { degToRad, getRenderedSize, gridSpacesToPixels, pixelsToGridSpaces, radToDeg } from "./utils";
 
 export let physics = {
     playerY: 0, // in grid spaces
     cubeRotation: 0, // in degrees
     v: 0,
-    gCubeBig: 86, // blocks per second
+    //gCubeBig: 86, // blocks per second
+    gCubeBig: 94.04,
 
     terminalVCubeBig: 25.9, // blocks per second
 
@@ -15,18 +17,80 @@ export let physics = {
     cubeSlopeRotationSpeed: null, // coming... not very soon
 
     cubeRotating: true,
-    isJumping: false,
     consecutiveJumps: 0,
     playerOffset: 2.5, // in grid spaces
     rotationResetting: false,
 
     playerGravity: 1, // 1 = Normal -1 = Upside-down
     
-    rotationDirection: 1 // 1 = clockwise -1 = counter-clockwise
-} 
+    rotationDirection: 1, // 1 = clockwise -1 = counter-clockwise
+    snappingToGround: false,
+    isOnABlock: false,
+    hitHead: false,
+
+    collidedObjectRenderedTop: null,
+    canJump: true
+}
+
+export let playerHitboxes = [
+    {   // cube
+
+    },
+    {   // ship
+
+    },
+    {   // ball
+
+    },
+    {   // UFO
+
+    },
+    {   // wave
+
+    },
+    {   // robot
+
+    },
+    {   // spider
+
+    },
+    {   // swing
+
+    },
+]
+
+export function getCollisionSide(player, rect) {
+
+    if (player.right  <= rect.left ||
+        player.left   >= rect.right ||
+        player.bottom <= rect.top  ||
+        player.top    >= rect.bottom) {
+        return null;
+    }
+
+    const overlapLeft   = player.right  - rect.left;
+    const overlapRight  = rect.right - player.left;
+    const overlapTop    = player.bottom - rect.top;
+    const overlapBottom = rect.bottom - player.top;
+
+    const minOverlap = Math.min(
+        overlapLeft,
+        overlapRight,
+        overlapTop,
+        overlapBottom
+    );
+
+
+    if (minOverlap === overlapTop)    return ["bottom", rect.top]; 
+    if (minOverlap === overlapBottom) return ["top", rect.bottom];
+    if (minOverlap === overlapLeft)   return ["right", rect.left];
+    if (minOverlap === overlapRight)  return ["left", rect.right];
+
+    return null;
+}
 
 let resetStartTime = 0;
-let resetDuration = 0.2; // in seconds (500ms)
+let resetDuration = 0.1; // in seconds (500ms)
 let resetFrom = 0;
 let resetTo = 0;
 
@@ -34,54 +98,79 @@ export let jumpVelocityCubeBig =  Math.sqrt(2 * physics.gCubeBig * speed[gameSet
 
 export function updatePlayerY(dt) {
 
+    // apply gravity (only affects velocity)
     physics.v += physics.gCubeBig * physics.playerGravity * dt;
-    physics.v = Math.max(-physics.terminalVCubeBig, Math.min(physics.v, physics.terminalVCubeBig));
+    physics.v = Math.max(
+        -physics.terminalVCubeBig,
+        Math.min(physics.v, physics.terminalVCubeBig)
+    );
 
+    // predict next position
+    const nextY = physics.playerY - physics.v * dt;
 
+    // landing surface
+    let landed = false;
+    let surfaceY = null;
 
-
-    // cube rotation direction logic
-    if (physics.playerY === 0) { // on the ground
-        if (physics.playerGravity === -1) { // if gravity is flipped
-            physics.rotationDirection = -1; // ccw
-        } else{ // if gravity is normal
-            physics.rotationDirection = 1; // cw
+    // prioritize block over ground
+    if (physics.isOnABlock) {
+        if (physics.collidedObjectRenderedTop != null) {
+            surfaceY = pixelsToGridSpaces(
+                window.innerHeight
+                - physics.collidedObjectRenderedTop
+                - getRenderedSize(512 * defaultGroundPositionPercentage)
+                // + camera.y // fix whatever this is
+            );
+            landed = true;
         }
     }
+    else if (nextY <= 0) {
+        surfaceY = 0;
+        landed = true;
+        physics.isOnABlock = false;
+    }
 
-
-
-
-    physics.playerY -= physics.v * dt;
-
-    // Ground collision
-    if (physics.playerY <= 0) {
-        physics.playerY = 0;
+    // resolve position & velocity
+    if (landed && physics.v >= 0) {
+        physics.canJump = true;
+        physics.playerY = surfaceY;
         physics.v = 0;
         physics.cubeRotating = false;
-        
-        if (!physics.isJumping) {
-            physics.consecutiveJumps = 0;
+
+        // rotation direction
+        if (physics.playerGravity === -1) {
+            physics.rotationDirection = -1;
         }
-        if (!jumpHeld) { // grounded
+        else{
+            physics.rotationDirection = 1 
+            }
+
+        // reset jump state & snap rotation
+        if (!jumpHeld) {
+
+            physics.consecutiveJumps = 0;
+
             if (!physics.rotationResetting) {
-                
+
                 resetStartTime = performance.now();
                 resetFrom = radToDeg(physics.cubeRotation);
                 resetTo = Math.round(resetFrom / 90) * 90;
 
-                if (resetFrom !== resetTo){
+                if (resetFrom !== resetTo) {
                     physics.rotationResetting = true;
-                    resetCubeRotation(dt);
                 }
             }
-            else{
-                resetCubeRotation(dt);
-            }
         }
-    }   
-    else if (physics.playerY > 0) {
+
+    } else {
+        physics.canJump = physics.isOnABlock ? true : false;
+        physics.playerY = nextY;
         physics.cubeRotating = true;
+
+        // leaving a block
+        if (physics.v < 0) {
+            physics.isOnABlock = false;
+        }
     }
 }
 
@@ -99,10 +188,9 @@ export function resetCubeRotation() {
     
     const elapsed = (performance.now() - resetStartTime) / 1000;
     const t = Math.min(elapsed / resetDuration, 1);
-    const eased = easeOutCubic(t);
+    const eased = easeOutQuad(t);
 
-    const angle =
-        resetFrom + (resetTo - resetFrom) * eased;
+    const angle = resetFrom + (resetTo - resetFrom) * eased;
 
     physics.cubeRotation = degToRad(angle);
 
@@ -116,11 +204,11 @@ export function resetCubeRotation() {
 
 export function jump() {
     physics.rotationResetting = false;
-    if (physics.playerY === 0) {
+    if (physics.canJump) {
 
         if (physics.consecutiveJumps === 0) {
             physics.consecutiveJumps = 1;
-        } else if (physics.isJumping) {
+        } else if (jumpHeld) {
             physics.consecutiveJumps += 1;
         } else {
             physics.consecutiveJumps = 1;

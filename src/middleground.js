@@ -43,8 +43,8 @@ export async function createMiddlegroundContainer(app) {
     middlegroundSprite.blendMode  = colorChannel[1013].blending  ? 'add' : 'normal';
     middleground2Sprite.blendMode = colorChannel[1014].blending ? 'add' : 'normal';
 
-    middlegroundSprite.y = app.screen.height - getRenderedSize(512 * defaultGroundPositionPercentage + 140);
-    middleground2Sprite.y = app.screen.height - getRenderedSize(512 * defaultGroundPositionPercentage + 140);
+    middlegroundSprite.y = app.screen.height - getRenderedSize(512 * defaultGroundPositionPercentage + 160);
+    middleground2Sprite.y = app.screen.height - getRenderedSize(512 * defaultGroundPositionPercentage + 160);
 
     middlegroundContainer.middlegroundSprite = middlegroundSprite;
     middlegroundContainer.middleground2Sprite = middleground2Sprite;

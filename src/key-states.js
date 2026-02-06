@@ -1,4 +1,6 @@
 import { gameSettings } from "./game-variables";
+import { loadLevel } from "./level-creation";
+import { gameState, setLevel } from "./main";
 import { physics } from "./physics";
 
 // jump input state
@@ -65,6 +67,17 @@ window.addEventListener("keyup", (e) => {
     if (e.code === "KeyY") {
         if (gameSettings.tickSpeed === 1) gameSettings.tickSpeed = 0;
         else gameSettings.tickSpeed = 1
+    }
+
+    // if (e.code === "Digit1") {
+    // }
+    // if (e.code === "Digit2") {
+    // }
+    // if (e.code === "Digit3") {
+    // }
+
+    if (e.code === "KeyH") {
+        gameSettings.showDebugCorners = !gameSettings.showDebugCorners
     }
 });
 

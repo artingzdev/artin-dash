@@ -5,6 +5,7 @@ export const gameSettings = {
     tickSpeed: 1, // for testing purposes only
     songOffset: 0, // seconds 
     showHitboxes: false,
+    showDebugCorners: false,
     hitboxWidth: 3,
     // 0 = cube
     // 1 = ship
@@ -88,5 +89,8 @@ export const camera = {
   velocityY: 0,
 
   minY: 0,
-  padding: 0.5
+  padding: 0.5,
+
+  easeDuration: 2,
+  followSpeed: 8.9
 };

@@ -8,9 +8,21 @@ export const radToDeg = rad => rad * 180/Math.PI;
 export const dvhToPx = dvh => (dvh/100) * app.screen.height;
 
 export function gridSpacesToPixels(gridSpaces) {
-    let pixels = 0.093 * window.innerHeight * gridSpaces;
-    return pixels;
+    if (window.innerHeight <= 0) {
+        return 0;
+    }
 
+    const pixels = 0.093 * window.innerHeight * gridSpaces;
+    return pixels;
+}
+
+export function pixelsToGridSpaces(pixels) {
+    if (window.innerHeight <= 0) {
+        return 0;
+    }
+    
+    const pixelsPerGridSpace = 0.093 * window.innerHeight;
+    return pixels / pixelsPerGridSpace;
 }
 
 export function getRenderedSize(pixels) {
@@ -27,9 +39,6 @@ export function randInt(min, max) {
 
 export function randSign() { return Math.random() < 0.5 ? -1 : 1 }
 
-export function lerp(a, b, t) {
-    return a + (b - a) * t
-}
 
 export function getGamePlayerColor(pUsed) {
     const p1 = colorChannel[1005].colorValue;
@@ -54,18 +63,4 @@ export function setObjectColorChannel(object, channelID) {
     }
     object.blendMode = colorChannel[channelID].blending ? 'add' : 'normal';
     object.alpha = colorChannel[channelID].opacity;
-}
-
-export function easeInOut(a, b, t, e) {
-    t *= 2
-    
-    let eased;
-
-    if (t < 1) {
-        eased = Math.pow(t, e) / 2
-    } else {
-        eased = 1 - Math.pow(2 - t, e) / 2
-    }
-
-    return a + (b - a) * eased;
 }

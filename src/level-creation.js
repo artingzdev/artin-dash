@@ -1,24 +1,23 @@
 import { colorChannel } from './colors.js';
 import { gameSettings } from './game-variables.js';
-import { Assets, Container, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
-import { groundY } from './main.js';
+import { Assets, Container, Graphics, Rectangle, RenderTexture, Sprite, Texture } from 'pixi.js';
+import { gameState, groundY } from './main.js';
 import { playerX } from './player.js';
 import { degToRad, getGamePlayerColor, getRenderedSize, gridSpacesToPixels, randInt, randSign, setObjectColorChannel } from './utils.js';
 
-
-let levelObjects = [ // example below
+export let levelObjects = [ // example below
     // {
     //     id: 1707,
     //     x: 15,
     //     y: 15,
-    //     // c1: 9998,
-    //     // c2: 9999,
+    //     c1: 9998,
+    //     c2: 9999,
     //     r: 0,
     //     flipH: false,
     //     flipV: false,
     //     zLayer: 5
     // },
-]
+];
 
 export let rotatingObjects = []; // list of rotating decorations in the level along with their rotation speeds
 
@@ -84,9 +83,9 @@ let colorString = "";
 
 
 
-
-
 export async function createLevelObjects(b5Container, b4Container, b3Container, b2Container, b1Container, t1Container, t2Container, t3Container, t4Container, portalBackContainer) {
+    if (!gameState.changeLevel) return;
+    gameState.changeLevel = false;
     rotatingObjects = [];
     const jsonIDs = await Assets.load('json/objects.json');
 
@@ -97,7 +96,7 @@ export async function createLevelObjects(b5Container, b4Container, b3Container, 
     
     for (const object of levelObjects) {
 
-        // --------- BASE OBJECT --------------
+        // base object
         const data = jsonIDs[object.id];
         if (!data || data.frame === "none") continue;
         if (data.frame.startsWith('edit')) continue; // hide editor-only objects
@@ -146,7 +145,7 @@ export async function createLevelObjects(b5Container, b4Container, b3Container, 
             }   
         }
 
-        // --------- CHILDREN OBJECTS --------------
+        // children objects
         let childrenSprites = [];
 
         if (data.children) {  // create the child objects if they exist
@@ -213,7 +212,8 @@ export async function createLevelObjects(b5Container, b4Container, b3Container, 
             }
         }
 
-        // ------------ HITBOXES ----------------------
+        // visual hitboxes
+
         let hitboxContainer = new Container();
         if (gameSettings.showHitboxes) {
             if (data.object_type === 0) { // solids
@@ -285,7 +285,19 @@ export async function createLevelObjects(b5Container, b4Container, b3Container, 
         objectContainer.scale.set(scaleX, scaleY);
 
 
-        // ---------- ROTATING OBJECTS -------------------
+        // set level hitboxes
+        if (data.object_type === 0) {
+            objectContainer.top = objectContainer.y - gridSpacesToPixels(data.hitbox.size.height / 60);
+            objectContainer.bottom = objectContainer.y + gridSpacesToPixels(data.hitbox.size.height / 60);
+            objectContainer.left = objectContainer.x - gridSpacesToPixels(data.hitbox.size.width / 60);
+            objectContainer.right = objectContainer.x + gridSpacesToPixels(data.hitbox.size.width / 60);
+
+            objectContainer.type = 0;
+        }
+        
+        
+
+        // rotating objects
         if (data.rot_speed) {
             let objectInfo = [];
             objectInfo.push(objectContainer, data.rot_speed * randSign());
@@ -304,6 +316,7 @@ export async function createLevelObjects(b5Container, b4Container, b3Container, 
         }
     }
 }
+
 
 
 
@@ -396,7 +409,7 @@ try {
 
 
         // object creation
-        levelObjects = [];
+        let newObjects = [];
         objectArray.forEach((object) => {
             const objectProperties = object.split(",");
             const newObject = {};
@@ -414,8 +427,9 @@ try {
                     if (objectProperties[i] === '25') {  newObject.zOrder = parseInt(objectProperties[i + 1])     }
                 }
             }
-            levelObjects.push(newObject);
+            newObjects.push(newObject);
         })
+        levelObjects = newObjects;
 
 } catch (error) {
     console.error(`Error processing ${fileName}.txt:`, error);
