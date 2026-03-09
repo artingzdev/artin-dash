@@ -5,4 +5,4 @@ So basically thought it would be a fun idea to recreate Geometry Dash in [Phaser
 ## Bug Reports & Feedback
 If you have any questions or concerns, please make a pull request.
 ## Geometry Dash? Nah bro, Artin Dash
-![An astronaut with the words Geometry Dash above him stares at planet earth, while another astronaut points a gun at him from behind, with the text Artin Dash above him. Funny meme]()
+![An astronaut with the words Geometry Dash above him stares at planet earth, while another astronaut points a gun at him from behind, with the text Artin Dash above him. Funny meme](https://github.com/artingzdev/artin-dash/blob/master/Screenshot%202026-03-08%20214242.png?raw=true)
