@@ -1,0 +1,810 @@
+{
+    "header": {
+        "color": [
+            {
+                "1": "40",
+                "2": "125",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1000",
+                "7": "1",
+                "15": "1",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "0",
+                "2": "102",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1001",
+                "7": "1",
+                "15": "1",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "0",
+                "2": "102",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1009",
+                "7": "1",
+                "15": "1",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "255",
+                "2": "255",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1002",
+                "5": "1",
+                "7": "1",
+                "15": "1",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "40",
+                "2": "125",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1013",
+                "7": "1",
+                "15": "1",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "40",
+                "2": "125",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1014",
+                "7": "1",
+                "15": "1",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "255",
+                "2": "255",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1005",
+                "5": "1",
+                "7": "1",
+                "15": "1",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "0",
+                "2": "200",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1006",
+                "5": "1",
+                "7": "1",
+                "15": "1",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "255",
+                "2": "255",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1004",
+                "7": "1",
+                "15": "1",
+                "18": "0",
+                "8": "1"
+            }
+        ],
+        "songOffset": 0.0,
+        "fadeIn": false,
+        "fadeOut": false,
+        "guidelines": "",
+        "backgroundTextureId": 0,
+        "groundTextureId": 0,
+        "middlegroundTextureId": 0,
+        "groundLine": 0,
+        "font": 0,
+        "colorPage": 0,
+        "gamemode": 0,
+        "miniMode": false,
+        "dualMode": false,
+        "speed": 0,
+        "levelStartPosObject": false,
+        "twoPlayerMode": false,
+        "platformerMode": false,
+        "kA23": "0",
+        "kA24": "0",
+        "allowMultiRotation": true,
+        "enable22Changes": true,
+        "kA48": "1",
+        "allowStaticRotate": true,
+        "reverseSync": true,
+        "mirrorMode": false,
+        "rotateGameplay": false,
+        "enablePlayerSqueeze": true,
+        "fixGravityBug": true,
+        "spawnGroup": 0,
+        "noTimePenalty": false,
+        "kA44": "0",
+        "decreaseBoostSlide": true,
+        "kA46": "0",
+        "kA47": "0",
+        "fixNegativeScale": true,
+        "fixRobotJump": true,
+        "kA35": "0",
+        "dynamicLevelHeight": true,
+        "sortGroups": true,
+        "fixRadiusCollision": true,
+        "kA19": "0",
+        "kA26": "0",
+        "reverseGameplay": false,
+        "kA21": "0",
+        "flipGravity": false
+    },
+    "objects": [
+        {
+            "objectId": 11,
+            "x": 426.249,
+            "y": 69.8525,
+            "155": "1",
+            "rotation": 270.0,
+            "interactible": true
+        },
+        {
+            "objectId": 1,
+            "x": 405.0,
+            "y": 105.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 435.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 465.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 495.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 525.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 555.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 585.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 645.0,
+            "y": 135.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 705.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 765.0,
+            "y": 195.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 825.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 855.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 885.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 915.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 945.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 975.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1005.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1035.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1065.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1095.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1125.0,
+            "y": 225.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 1155.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1185.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1485.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1515.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1545.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1575.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1605.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1635.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 10,
+            "x": 1725.0,
+            "y": 255.0,
+            "155": "1",
+            "rotation": 270.0,
+            "interactible": true
+        },
+        {
+            "objectId": 1,
+            "x": 1305.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1335.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1365.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1395.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1425.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1455.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1215.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1245.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1275.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 36,
+            "x": 1065.0,
+            "y": 135.0,
+            "155": "1",
+            "touchTriggered": true,
+            "interactible": true
+        },
+        {
+            "objectId": 35,
+            "x": 1335.0,
+            "y": 208.0,
+            "155": "1",
+            "rotation": 180.0,
+            "interactible": true
+        },
+        {
+            "objectId": 39,
+            "x": 1005.0,
+            "y": 204.0,
+            "155": "2",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 39,
+            "x": 1035.0,
+            "y": 204.0,
+            "155": "2",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 39,
+            "x": 1065.0,
+            "y": 204.0,
+            "155": "2",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 39,
+            "x": 1095.0,
+            "y": 204.0,
+            "155": "2",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 39,
+            "x": 1125.0,
+            "y": 204.0,
+            "155": "2",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 8,
+            "x": 1365.0,
+            "y": 195.0,
+            "155": "2",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 1,
+            "x": 1755.0,
+            "y": 165.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 1785.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1815.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1845.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1875.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1905.0,
+            "y": 165.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 2025.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2055.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2085.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2115.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2145.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2055.0,
+            "y": 285.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2085.0,
+            "y": 285.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2115.0,
+            "y": 285.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2145.0,
+            "y": 285.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 11,
+            "x": 2085.0,
+            "y": 255.0,
+            "155": "1",
+            "rotation": 270.0,
+            "interactible": true
+        },
+        {
+            "objectId": 10,
+            "x": 2145.0,
+            "y": 195.0,
+            "155": "1",
+            "rotation": 90.0,
+            "interactible": true
+        },
+        {
+            "objectId": 103,
+            "x": 2085.0,
+            "y": 189.0,
+            "155": "2"
+        },
+        {
+            "objectId": 31,
+            "x": 1755.0,
+            "y": 195.0,
+            "155": "1",
+            "interactible": true,
+            "kA2": "0",
+            "kA3": "0",
+            "kA8": "0",
+            "kA4": "0",
+            "kA9": "1",
+            "kA10": "0",
+            "kA22": "0",
+            "kA23": "0",
+            "kA24": "0",
+            "kA27": "1",
+            "kA40": "1",
+            "kA48": "1",
+            "kA41": "1",
+            "kA42": "1",
+            "kA28": "0",
+            "kA29": "0",
+            "kA31": "1",
+            "kA32": "1",
+            "kA36": "0",
+            "kA43": "0",
+            "kA44": "0",
+            "kA45": "1",
+            "kA46": "0",
+            "kA47": "0",
+            "kA33": "1",
+            "kA34": "1",
+            "kA35": "0",
+            "kA37": "1",
+            "kA38": "1",
+            "kA39": "1",
+            "kA19": "0",
+            "kA26": "0",
+            "kA20": "0",
+            "kA21": "0",
+            "kA11": "0"
+        },
+        {
+            "objectId": 1,
+            "x": 2205.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 2205.0,
+            "y": 195.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 2175.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2235.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2265.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2295.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2325.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2355.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2385.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2415.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2445.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1995.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1965.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1935.0,
+            "y": 165.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2505.0,
+            "y": 135.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 2565.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2625.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 103,
+            "x": 2145.0,
+            "y": 261.0,
+            "155": "2",
+            "rotation": 180.0
+        }
+    ]
+}

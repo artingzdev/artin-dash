@@ -1,0 +1,28 @@
+{
+    "speeds": [
+        {
+            "velX": 251.16,
+            "jumpHeightCubeBig": [58.65, 61.08]
+        }, 
+        {
+            "velX": 311.58,
+            "jumpHeightCubeBig": [63.835, 66.39]
+        }, 
+        {
+            "velX": 387.42,
+            "jumpHeightCubeBig": [66.93, 69.51]
+        }, 
+        {
+            "velX": 468.00,
+            "jumpHeightCubeBig": [64.50, 66.99]
+        }, 
+        {
+            "velX": 576.00,
+            "jumpHeightCubeBig": [64.50, 66.99]
+
+        }        
+    ],
+    "jumpRingMultipliers": {
+        "yellow": 1
+    }
+}
