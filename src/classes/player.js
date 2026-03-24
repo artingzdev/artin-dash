@@ -1,6 +1,6 @@
-import { colorChannel, defaultLevelChannel, resetLevelChannels } from "../colors";
+import { colorChannel, resetLevelChannels } from "../colors";
 import { gameState } from "../state/gameState";
-import { clampMinMax, computeJumpVelocity, getGamePlayerColor, getParticleScale, getRenderedSize, getTextureDimensions, gridSpacesToPixels, randInt, unitsToPixels } from "../utils";
+import { computeJumpVelocity, getGamePlayerColor, getParticleScale, getRenderedSize, getTextureDimensions, gridSpacesToPixels, randInt, unitsToPixels } from "../utils";
 import gpp from '../data/gameplayParameters.json';
 
 export class Player extends Phaser.GameObjects.Container {
@@ -309,13 +309,13 @@ export class Player extends Phaser.GameObjects.Container {
 
             alpha: {start: 1, end: 0, ease: 'Power2'}
         });
+
         this.dragEffectFlipped.startFollow(this, unitsToPixels(-12), unitsToPixels(-15));
 
         this.hitbox.ignoreGravity = true;
         this.innerHitbox.ignoreGravity = true;
         this.landed = true;
         this.grounded = true; // touching the ground
-        //this.scrollFactorX = 0;
 
         this.easeStartAngle = null;
         this.easeStartTime = null;
@@ -344,7 +344,7 @@ export class Player extends Phaser.GameObjects.Container {
 
         scene.add.existing(this); // add player sprites to the scene
 
-        scene.matter.world.on("collisionstart", (event) => { // collision detection (sensors only)
+        scene.matter.world.on("collisionstart", (event) => { // collision detection (sensors only, once per collision)
             for (const pair of event.pairs) {
 
                 const a = pair.bodyA
@@ -410,14 +410,13 @@ export class Player extends Phaser.GameObjects.Container {
         });
     }
 
-    updateRotation(dt) {
-        const player = gameState.player;
+    incrementRotation(playerState, dt) {
 
-        if (!player.miniMode) {
-            switch (player.gamemode) {
+        if (!playerState.miniMode) {
+            switch (playerState.gamemode) {
                 case 0: // cube
                     if (!this.landed) {
-                        this.angle += player.cube.big.rotationSpeed * this.rotationDirection * dt;
+                        this.angle += playerState.cube.big.rotationSpeed * this.rotationDirection * dt;
                     }
                     break;
             }
@@ -534,42 +533,26 @@ export class Player extends Phaser.GameObjects.Container {
         }
     }
 
-    update(scene, dt) { // physics
-        const player = gameState.player; // player state alias
-        const bodyBounds = this.hitbox.bounds;
-        const halfWidth = (bodyBounds.max.x - bodyBounds.min.x) / 2;
-        const halfHeight = (bodyBounds.max.y - bodyBounds.min.y) / 2;
-        const wasLanded = this.landed;
-        const gravityMultiplier = player.flipGravity ? -1 : 1;
-
-        this.grounded = Math.round(gameState.screen.height - player.y - halfHeight) == 0 ? true : false;
-        this.screenX = this.x - scene.cameras.main.scrollX;
-
-
-        // flip drag effect when player is flipped
-        if (player.flipGravity) {
+    updateDragEffectDir(playerState) {
+        if (playerState.flipGravity) {
             this.updateDragEffect(true);
         } else {
             this.updateDragEffect(false);
         }
+    }
 
-
-        // ghost trail activation
-        if (player.ghostTrailOn) this.ghostTrail.start();
+    updateGhostTrail(playerState) {
+        if (playerState.ghostTrailOn) this.ghostTrail.start();
         else this.ghostTrail.stop();
+    }
 
-        // compute delta x and y (difference in X/Y position since last frame)
-        this.deltaY = player.y - this.lastY;
-        this.lastY = player.y;
-        this.deltaX = player.x - this.lastX;
-        this.lastX = player.x;
-
+    handlePlayerCollision(scene, playerState, halfWidth, halfHeight, dt) {
         const deltaX = unitsToPixels(scene.scrollSpeedAmount, false) * dt;
-        const deltaY = unitsToPixels(player.velocity, false) * dt;
+        const deltaY = unitsToPixels(playerState.velocity, false) * dt;
         const currentBodyX = this.hitbox.position.x;
-        const currentBodyY = player.y;
-        const nextPlayerX = player.x + deltaX;
-        const nextPlayerY = player.y + deltaY;
+        const currentBodyY = playerState.y;
+        const nextPlayerX = playerState.x + deltaX;
+        const nextPlayerY = playerState.y + deltaY;
         const targetBodyX = nextPlayerX;
 
         const collision = this.resolveVerticalCollision(
@@ -587,9 +570,9 @@ export class Player extends Phaser.GameObjects.Container {
         }
 
         if (this.landed && this.respawnLandingLockFrames === 0) {
-            const hasSupportBelow = this.hasSupportBelow(scene, this.hitbox.position.x, player.y, halfWidth, halfHeight);
-            const hasSupportAbove = this.hasSupportAbove(scene, this.hitbox.position.x, player.y, halfWidth, halfHeight);
-            if (player.flipGravity) {
+            const hasSupportBelow = this.hasSupportBelow(scene, this.hitbox.position.x, playerState.y, halfWidth, halfHeight);
+            const hasSupportAbove = this.hasSupportAbove(scene, this.hitbox.position.x, playerState.y, halfWidth, halfHeight);
+            if (playerState.flipGravity) {
                 if (!hasSupportAbove) {
                     this.landed = false;
                 }
@@ -600,21 +583,44 @@ export class Player extends Phaser.GameObjects.Container {
             }
         }
 
-        // update player velocity (independant from Player.landed)
-        if (!player.miniMode) { // big
-            switch(player.gamemode) {
-                case 0: // cube
-                    player.velocity += player.cube.big.acceleration * gravityMultiplier * dt;
-                    clampMinMax(
-                        player.velocity,
-                        -player.cube.big.terminalVelocity,
-                        player.cube.big.terminalVelocity
-                    )
-                    player.velocity = Math.max(Math.min(player.velocity, player.cube.big.terminalVelocity), -player.cube.big.terminalVelocity); // clamp terminal velocity
-                    break;
-            }      
+        playerState.x = nextPlayerX;
+        playerState.y = collision.y;
+
+        if (playerState.y >= gameState.screen.height - halfHeight) {
+            playerState.y = gameState.screen.height - halfHeight;
+        }   
+
+        if (collision.hitFloor) {
+            if (!playerState.flipGravity) {
+                this.landed = true;
+                playerState.velocity = 0;
+            }
+
+        } else if (collision.hitCeiling) {
+            if (playerState.flipGravity) {
+                this.landed = true;
+                playerState.velocity = 0;
+            }
+        }
+    }
+
+    updateVelocity(playerState, dt, gravityMultiplier) {
+        // update player velocity (independent from Player.landed)
+        if (playerState.miniMode || playerState.gamemode !== 0) {
+            return;
         }
 
+        const cubePhysics = playerState.cube.big;
+        const terminalVelocity = cubePhysics.terminalVelocity;
+        const nextVelocity = playerState.velocity + (cubePhysics.acceleration * gravityMultiplier * dt);
+
+        playerState.velocity = Math.max(
+            -terminalVelocity,
+            Math.min(nextVelocity, terminalVelocity)
+        );
+    }
+
+    runLandedCheck(playerState) {
         if (!this.landed) { // in the air
             if (this.isDragEffectRunning) {
                 this.dragEffect.stop();
@@ -632,38 +638,16 @@ export class Player extends Phaser.GameObjects.Container {
                 this.isDragEffectRunning = true;
             }
 
-            if (player.flipGravity) this.rotationDirection = -1;
+            if (playerState.flipGravity) this.rotationDirection = -1;
             else this.rotationDirection = 1;
-
-
-
-
             
-            player.velocity = 0;
+            playerState.velocity = 0;
         }
+    }
 
-        player.x = nextPlayerX;
-        player.y = collision.y;
-
-        if (player.y >= gameState.screen.height - halfHeight) {
-            player.y = gameState.screen.height - halfHeight;
-        }   
-
-        if (collision.hitFloor) {
-            if (!player.flipGravity) {
-                this.landed = true;
-                player.velocity = 0;
-            }
-
-        } else if (collision.hitCeiling) {
-            if (player.flipGravity) {
-                this.landed = true;
-                player.velocity = 0;
-            }
-        }
-
+    runSingleLandedCheck(playerState, wasLanded, scene) {
         if (!wasLanded && this.landed) { // as soon as the player lands on an object or one of the grounds (runs once per landing, not every frame)
-            if (player.flipGravity) {
+            if (playerState.flipGravity) {
                 this.rotationDirection = -1;
                 this.spawnLandEffect(scene, true);
             } 
@@ -684,31 +668,78 @@ export class Player extends Phaser.GameObjects.Container {
             const targetAngle = Math.round(this.angle / 90) * 90; // determine angle to snap player back to normal
             let easeDuration = 0;
             
-            switch(player.gamemode) { // determine which ease duration to use
-                case 0: easeDuration = player.cube.easeDuration; break; // cube
+            switch(playerState.gamemode) { // determine which ease duration to use
+                case 0: easeDuration = playerState.cube.easeDuration; break; // cube
             }
             
             this.rotateTo(targetAngle, easeDuration);
         }
+    }
 
+    updateConsecutiveJumps(playerState) {
         if (this.consecutiveJumps > 1) {
-            player.cube.jumpIndex = 1;
+            playerState.cube.jumpIndex = 1;
         }
         else {
-            player.cube.jumpIndex = 0;
+            playerState.cube.jumpIndex = 0;
         }
+    }
 
-        this.x = player.x;
+    updateSpritePos(playerState, scene) {
+        this.x = playerState.x;
         scene.matter.body.setPosition(this.hitbox, {
-            x: player.x,
-            y: player.y
+            x: playerState.x,
+            y: playerState.y
         });
         scene.matter.body.setPosition(this.innerHitbox, {
-            x: player.x,
-            y: player.y
+            x: playerState.x,
+            y: playerState.y
         });
 
-        this.y = player.y;
+        this.y = playerState.y;
+    }
+
+    updatePlayerDeltaPos(playerState) {
+        this.deltaY = playerState.y - this.lastY;
+        this.lastY = playerState.y;
+        this.deltaX = playerState.x - this.lastX;
+        this.lastX = playerState.x;
+    }
+
+    updateGrounded(playerState, halfHeight){
+        this.grounded = Math.round(gameState.screen.height - playerState.y - halfHeight) == 0 ? true : false;
+    }
+
+    updateScreenX(scene) {
+        this.screenX = this.x - scene.cameras.main.scrollX;
+    }
+
+    update(scene, dt) { // physics
+        const player = gameState.player; // player state reference
+        const bodyBounds = this.hitbox.bounds;
+        const halfWidth = (bodyBounds.max.x - bodyBounds.min.x) / 2;
+        const halfHeight = (bodyBounds.max.y - bodyBounds.min.y) / 2;
+        const wasLanded = this.landed;
+        const gravityMultiplier = player.flipGravity ? -1 : 1;
+
+        this.updateGrounded(player, halfHeight);
+        this.updateScreenX(scene);
+
+        this.updateDragEffectDir(player);
+        this.updateGhostTrail(player)
+        this.incrementRotation(player, dt);
+
+        this.updatePlayerDeltaPos(player);
+
+        this.handlePlayerCollision(scene, player, halfWidth, halfHeight, dt);
+
+        this.updateVelocity(player, dt, gravityMultiplier);
+
+        this.runLandedCheck(player);
+        this.runSingleLandedCheck(player, wasLanded, scene);
+
+        this.updateConsecutiveJumps(player);
+        this.updateSpritePos(player, scene);
     }
 
     jump(forceJump, multiplier) {

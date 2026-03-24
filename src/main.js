@@ -9,7 +9,6 @@ import { Middleground } from './classes/middleground.js';
 import { Player } from './classes/player.js';
 import { loadLevel } from './load.js';
 
-
 let groundLayer;
 let ceilingLayer;
 let backgroundLayer;
@@ -106,9 +105,6 @@ class playScene extends Phaser.Scene
 
         // player collision resolution runs in Player.update()
 
-        // compute cube gravity
-        //gameState.player.cube.big.acceleration = computeAcceleration(gpp.speeds[gameState.settings.gameSpeed].velX, gpp.speeds[gameState.settings.gameSpeed].jumpHeightCubeBig[1], gameState.player.cube.big._jumpDist);
-        gameState.player.cube.big.acceleration = 94.04 * 30;
         this.physicsStep = 1 / 240;
         this.physicsAccumulator = 0;
         this.maxPhysicsSubsteps = 12;
@@ -249,8 +245,6 @@ class playScene extends Phaser.Scene
             if (substeps === this.maxPhysicsSubsteps && this.physicsAccumulator >= this.physicsStep) {
                 this.physicsAccumulator = 0;
             }
-
-            playerObject.updateRotation(this.dt);
 
             // Camera logic expects frame-level displacement, not per-substep displacement.
             playerObject.deltaX = gameState.player.x - frameStartX;

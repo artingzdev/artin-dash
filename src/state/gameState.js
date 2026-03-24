@@ -1,5 +1,3 @@
-import { gridSpacesToPixels } from "../utils";
-
 export const gameState = {
     screen: {
         width: 0,
@@ -30,14 +28,14 @@ export const gameState = {
                 _jumpDist: 136.32,
                 //acceleration: 94.04
                 //acceleration: 96.11, // blocks/s^2
-                //acceleration: 2580, // units/s^2
+                acceleration: 2580, // units/s^2
                 //acceleration: 2886, // units/s^2
-                acceleration: null,
-                terminalVelocity: 809.972, // units/s
-                rotationSpeed: 415.83 // deg/s
+                //acceleration: 3104.56,
+                terminalVelocity: 900, // units/s
+                rotationSpeed: 5400/13 // deg/s
             },
             mini: {
-                rotationSpeed: 539.979 // deg/s
+                rotationSpeed: 540 // deg/s
             }
         },
         ship: {
