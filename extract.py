@@ -282,7 +282,7 @@ def decompress_data(encoded):
 
 
 def main():
-    input_file = "pstTest.gmd"
+    input_file = "adTest.gmd"
 
     raw = decompress_data(extract_k4_data(input_file))
     structured = convert_raw_to_structured(raw)

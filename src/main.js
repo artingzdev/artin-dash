@@ -103,35 +103,33 @@ class playScene extends Phaser.Scene
         this.cameras.main.scrollY = gameState.camera.minY;
         this.handleKeyPresses();
 
-        // player collision resolution runs in Player.update()
+        // this.physicsStep = 1 / 240;
+        // this.physicsAccumulator = 0;
+        // this.maxPhysicsSubsteps = 12;
 
-        this.physicsStep = 1 / 240;
-        this.physicsAccumulator = 0;
-        this.maxPhysicsSubsteps = 12;
-
-        // pre-calculate horizontal velocity (player move speed) for special jumps (in array → 0 = initial jump, 1 = buffered jumps)
-        this.velXSpecial = {
-            _4x1:
-                [
-                    computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[1].jumpHeightCubeBig[0], 120, 30, this.physicsStep),
-                    computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[1].jumpHeightCubeBig[1], 120, 30, this.physicsStep)
-                ],
-            _3x2:
-                [
-                    computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[1].jumpHeightCubeBig[0], 90, 60, this.physicsStep),
-                    computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[1].jumpHeightCubeBig[1], 90, 60, this.physicsStep)
-                ],
-            _2x2:
-                [
-                    computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[0].jumpHeightCubeBig[0], 60, 60, this.physicsStep),
-                    computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[0].jumpHeightCubeBig[1], 60, 60, this.physicsStep)
-                ],
-            _4x2:
-                [
-                    computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[2].jumpHeightCubeBig[0], 120, 60, this.physicsStep),
-                    computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[2].jumpHeightCubeBig[1], 120, 60, this.physicsStep)
-                ],
-        }
+        // pre-calculate horizontal velocity (player move speed) for snap jumps (in array → 0 = initial jump, 1 = buffered jumps)
+        // this.velXSpecial = {
+        //     _4x1:
+        //         [
+        //             computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[1].jumpHeightCubeBig[0], 120, 30, this.physicsStep),
+        //             computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[1].jumpHeightCubeBig[1], 120, 30, this.physicsStep)
+        //         ],
+        //     _3x2:
+        //         [
+        //             computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[1].jumpHeightCubeBig[0], 90, 60, this.physicsStep),
+        //             computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[1].jumpHeightCubeBig[1], 90, 60, this.physicsStep)
+        //         ],
+        //     _2x2:
+        //         [
+        //             computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[0].jumpHeightCubeBig[0], 60, 60, this.physicsStep),
+        //             computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[0].jumpHeightCubeBig[1], 60, 60, this.physicsStep)
+        //         ],
+        //     _4x2:
+        //         [
+        //             computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[2].jumpHeightCubeBig[0], 120, 60, this.physicsStep),
+        //             computeVelXFromLandingCoordsDiscrete(gameState.player.cube.big.acceleration, gpp.speeds[2].jumpHeightCubeBig[1], 120, 60, this.physicsStep)
+        //         ],
+        // }
 
         gameState.camera.toY = this.cameras.main.scrollY;
         this.cameraEaseStartTime = null;
@@ -230,25 +228,25 @@ class playScene extends Phaser.Scene
 
         if (!gameState.player.isDead) {
 
-            const frameStartX = gameState.player.x;
-            const frameStartY = gameState.player.y;
-            this.physicsAccumulator += this.dt;
-            let substeps = 0;
-            while (this.physicsAccumulator >= this.physicsStep && substeps < this.maxPhysicsSubsteps) {
-                playerObject.update(this, this.physicsStep);
-                playerObject.checkTriggers(this); // check oncoming triggers and run them when passed
-                if (this.jumpHeld) playerObject.jump(this);
-                this.physicsAccumulator -= this.physicsStep;
-                substeps++;
-            }
+            // const frameStartX = gameState.player.x;
+            // const frameStartY = gameState.player.y;
+            // this.physicsAccumulator += this.dt;
+            // let substeps = 0;
+            // while (this.physicsAccumulator >= this.physicsStep && substeps < this.maxPhysicsSubsteps) {
+            playerObject.update(this, this.dt);
+            playerObject.checkTriggers(this); // check oncoming triggers and run them when passed
+            if (this.jumpHeld) playerObject.jump(this);
+            //this.physicsAccumulator -= this.physicsStep;
+            //substeps++;
+            //}
 
-            if (substeps === this.maxPhysicsSubsteps && this.physicsAccumulator >= this.physicsStep) {
-                this.physicsAccumulator = 0;
-            }
+            // if (substeps === this.maxPhysicsSubsteps && this.physicsAccumulator >= this.physicsStep) {
+            //     this.physicsAccumulator = 0;
+            // }
 
             // Camera logic expects frame-level displacement, not per-substep displacement.
-            playerObject.deltaX = gameState.player.x - frameStartX;
-            playerObject.deltaY = gameState.player.y - frameStartY;
+            // playerObject.deltaX = gameState.player.x - frameStartX;
+            // playerObject.deltaY = gameState.player.y - frameStartY;
 
             // make camera follow player after threshold (screen width / 2 - 75 units by default)
             const followThresholdX = Math.round(gameState.screen.width / 2 - unitsToPixels(camera.offset));
@@ -290,6 +288,7 @@ class playScene extends Phaser.Scene
         ceilingLayer.scroll(this);
         backgroundLayer.scroll(this);
         middlegroundLayer.scroll(this);
+        
         this.updateStaticObjectCulling();
 
         // handle key events

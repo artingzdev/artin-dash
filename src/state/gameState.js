@@ -22,17 +22,10 @@ export const gameState = {
         isDead: false,
         
         cube: {
-            easeDuration: 75, // ms
+            easeDuration: 65, // ms
             jumpIndex: 0,
             big: {
-                _jumpDist: 136.32,
-                //acceleration: 94.04
-                //acceleration: 96.11, // blocks/s^2
-                acceleration: 2580, // units/s^2
-                //acceleration: 2886, // units/s^2
-                //acceleration: 3104.56,
-                terminalVelocity: 900, // units/s
-                rotationSpeed: 5400/13 // deg/s
+                rotationSpeed: 415.3846089940829, // deg/s
             },
             mini: {
                 rotationSpeed: 540 // deg/s

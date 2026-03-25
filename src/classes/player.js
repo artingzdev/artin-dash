@@ -1,7 +1,6 @@
 import { colorChannel, resetLevelChannels } from "../colors";
 import { gameState } from "../state/gameState";
-import { computeJumpVelocity, getGamePlayerColor, getParticleScale, getRenderedSize, getTextureDimensions, gridSpacesToPixels, randInt, unitsToPixels } from "../utils";
-import gpp from '../data/gameplayParameters.json';
+import { clampMinMax, getGamePlayerColor, getParticleScale, getRenderedSize, getTextureDimensions, gridSpacesToPixels, randInt, unitsToPixels } from "../utils";
 
 export class Player extends Phaser.GameObjects.Container {
     getBodiesInRadius(scene, radius = unitsToPixels(150)) {
@@ -323,6 +322,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.consecutiveJumps = 0;
 
         this.rotationDirection = 1;
+        this.terminalVelocity = 810; // units/sec
 
         this.deltaY = 0;
         this.deltaX = 0;
@@ -606,18 +606,12 @@ export class Player extends Phaser.GameObjects.Container {
 
     updateVelocity(playerState, dt, gravityMultiplier) {
         // update player velocity (independent from Player.landed)
-        if (playerState.miniMode || playerState.gamemode !== 0) {
+        if (playerState.miniMode || playerState.gamemode !== 0) { // to be implemented later
             return;
         }
 
-        const cubePhysics = playerState.cube.big;
-        const terminalVelocity = cubePhysics.terminalVelocity;
-        const nextVelocity = playerState.velocity + (cubePhysics.acceleration * gravityMultiplier * dt);
-
-        playerState.velocity = Math.max(
-            -terminalVelocity,
-            Math.min(nextVelocity, terminalVelocity)
-        );
+        playerState.velocity = playerState.velocity + (this.getAcceleration(gameState.settings.gameSpeed) * gravityMultiplier * dt);
+        clampMinMax(playerState.velocity, -this.terminalVelocity, this.terminalVelocity);
     }
 
     runLandedCheck(playerState) {
@@ -742,9 +736,49 @@ export class Player extends Phaser.GameObjects.Container {
         this.updateSpritePos(player, scene);
     }
 
+    getJumpVel(speed) {
+        switch(speed) {
+            case 0:
+                return 10.404 * 54;
+            case 1:
+                return 10.964 * 54;
+            case 2:
+                return 11.204 * 54;
+            case 3:
+                return 11.014 * 54;
+            case 4:
+                return 11.014 * 54;
+            default:
+                return speed;
+        }
+    }
+
+    getRoundedVelocity(velocityVel54, tps) {
+        const rounded = (velocityVel54 * 1.0 * (54/tps)).toFixed(3) * tps * 54;
+        return rounded;
+    }
+
+    getAcceleration(speed) {
+        switch(speed) {
+            case 0:
+                return this.getRoundedVelocity(0.940199, 240);
+            case 1:
+                return this.getRoundedVelocity(0.958199, 240);
+            case 2:
+                return this.getRoundedVelocity(0.957199, 240);
+            case 3:
+                return this.getRoundedVelocity(0.961199, 240);
+            case 4:
+                return this.getRoundedVelocity(0.961199, 240);
+            default:
+                return speed;
+        }
+    }
+
     jump(forceJump, multiplier) {
 
-        const player = gameState.player; // player state alias
+        const player = gameState.player; // player state reference
+        const speed = gameState.settings.gameSpeed;
 
         if (this.landed || forceJump === true) { // jump ↓
             if (this.consecutiveJumps === 0) this.consecutiveJumps++;
@@ -757,9 +791,9 @@ export class Player extends Phaser.GameObjects.Container {
                 switch(player.gamemode) {
                     case 0: // cube
                         if (!player.flipGravity) {
-                            player.velocity = -(computeJumpVelocity(gameState.player.cube.big.acceleration, gpp.speeds[gameState.settings.gameSpeed].jumpHeightCubeBig[player.cube.jumpIndex]));
+                            player.velocity = -this.getJumpVel(speed);
                         } else {
-                            player.velocity = (computeJumpVelocity(gameState.player.cube.big.acceleration, gpp.speeds[gameState.settings.gameSpeed].jumpHeightCubeBig[player.cube.jumpIndex]));
+                            player.velocity = this.getJumpVel(speed);
                         }
                         break;
                 }

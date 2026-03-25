@@ -1,4 +1,11 @@
 # TO DO
+- Make optimizations
+- Rewrite collision detection from scratch with better performance
+- Find a way to show uncapped framerate / draw calls
+- Fully remove gpp and move all player states to Player class
+
+- Fix player spawning weird
+
 - Make yellow jump pad work
 - Make ring counter / canRingJump
 - Make player circle respawn effect
