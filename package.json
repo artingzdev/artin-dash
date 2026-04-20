@@ -5,7 +5,7 @@
     "version": "3.8.8"
   },
   "scripts": {
-    "deploy": "node -e \"require('fs').writeFileSync('build/web-desktop/.nojekyll', '')\" && npx gh-pages -d build/web-desktop --dotfiles"
+    "deploy": "gh-pages -d build/web-desktop"
   },
   "devDependencies": {
     "gh-pages": "^6.x.x"
