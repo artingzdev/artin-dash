@@ -5,7 +5,7 @@
     "version": "3.8.8"
   },
   "scripts": {
-    "deploy": "gh-pages -d build/web-desktop"
+    "deploy": "npx gh-pages -d build/web-desktop"
   },
   "devDependencies": {
     "gh-pages": "^6.x.x"
