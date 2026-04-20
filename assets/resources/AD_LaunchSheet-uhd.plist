@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0" msg="Spritesheet created with https://gdcolon.com/gdsplitter">
+	<dict>
+		<key>frames</key>
+		<dict>
+			<key>AD_logo_001-uhd.png</key>
+			<dict>
+				<key>aliases</key>
+				<array/>
+				<key>spriteOffset</key>
+				<string>{0,-4.5}</string>
+				<key>spriteSize</key>
+				<string>{1211,190}</string>
+				<key>spriteSourceSize</key>
+				<string>{1211,199}</string>
+				<key>textureRect</key>
+				<string>{{0,0},{1211,190}}</string>
+				<key>textureRotated</key>
+				<false/>
+			</dict>
+			<key>artinGamesLogo_001-uhd.png</key>
+			<dict>
+				<key>aliases</key>
+				<array/>
+				<key>spriteOffset</key>
+				<string>{-1,0.5}</string>
+				<key>spriteSize</key>
+				<string>{962,217}</string>
+				<key>spriteSourceSize</key>
+				<string>{970,224}</string>
+				<key>textureRect</key>
+				<string>{{0,190},{962,217}}</string>
+				<key>textureRotated</key>
+				<false/>
+			</dict>
+		</dict>
+		<key>metadata</key>
+		<dict>
+			<key>format</key>
+			<integer>3</integer>
+			<key>pixelFormat</key>
+			<string>RGBA8888</string>
+			<key>premultiplyAlpha</key>
+			<false/>
+			<key>realTextureFileName</key>
+			<string>AD_LaunchSheet-uhd.png</string>
+			<key>size</key>
+			<string>{1211,407}</string>
+			<key>textureFileName</key>
+			<string>AD_LaunchSheet-uhd.png</string>
+		</dict>
+	</dict>
+</plist>
