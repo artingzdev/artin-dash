@@ -13,6 +13,7 @@ enum Trigger {
     COLOR_LINE = 915,
     COLOR = 899,
 
+    ENTER_NONE = 22,
     ENTER_SCALE_UP = 27,
     ENTER_FLY_BOTTOM = 23,
     ENTER_FLY_TOP = 24
@@ -39,6 +40,17 @@ export class TriggerManager extends Component {
     // tracks all currently-running color transitions
     private static activeTransitions: ActiveColorTransition[] = [];
 
+    private static toChannelAlpha(opacity: number | undefined): number {
+        const normalizedOpacity = opacity ?? 1;
+        return Math.round(normalizedOpacity * 255);
+    }
+
+    private static cloneColorTrigger(
+        [channelID, x, duration, color, blending]: [number, number, number, Color, boolean]
+    ): [number, number, number, Color, boolean] {
+        return [channelID, x, duration, new Color(color.r, color.g, color.b, color.a), blending];
+    }
+
     public static clearTriggersArray(): void {
         TriggerManager.colorTriggers.length = 0;
         TriggerManager.allColorTriggers.length = 0;
@@ -51,8 +63,10 @@ export class TriggerManager extends Component {
     }
 
     public static resetTriggers(): void {
-        TriggerManager.colorTriggers = structuredClone(TriggerManager.allColorTriggers);
-        TriggerManager.enterEffectTriggers = structuredClone(TriggerManager.allEnterEffectTriggers);
+        TriggerManager.colorTriggers = TriggerManager.allColorTriggers
+            .map((trigger) => TriggerManager.cloneColorTrigger(trigger));
+        TriggerManager.enterEffectTriggers = TriggerManager.allEnterEffectTriggers
+            .map(([type, x]) => [type, x]);
         
         TriggerManager.activeTransitions.length = 0;
         EnterEffectManager.currentEnterEffect = EnterEffect.NONE;
@@ -72,7 +86,7 @@ export class TriggerManager extends Component {
             .filter(t => t.channelID !== channelID);
 
         if (duration <= 0) {
-            ColorChannelManager.instance.setChannel(channelID, targetColor.r, targetColor.g, targetColor.b, targetColor.a * 255, blending);
+            ColorChannelManager.instance.setChannel(channelID, targetColor.r, targetColor.g, targetColor.b, targetColor.a, blending);
             return;
         }
 
@@ -99,7 +113,7 @@ export class TriggerManager extends Component {
             const b = Math.round(t.startColor.b + (t.targetColor.b - t.startColor.b) * progress);
             const a = Math.round(t.startColor.a + (t.targetColor.a - t.startColor.a) * progress);
 
-            ColorChannelManager.instance.setChannel(t.channelID, r, g, b, a * 255, t.blending);
+            ColorChannelManager.instance.setChannel(t.channelID, r, g, b, a, t.blending);
 
             if (progress >= 1) finished.push(t);
         }
@@ -123,7 +137,7 @@ export class TriggerManager extends Component {
                     objectData.red,
                     objectData.green,
                     objectData.blue,
-                    objectData.opacity
+                    TriggerManager.toChannelAlpha(objectData.opacity)
                 );
                 colorTrigger = [
                     objectData.targetColorId,
@@ -141,7 +155,7 @@ export class TriggerManager extends Component {
                     objectData.red,
                     objectData.green,
                     objectData.blue,
-                    objectData.opacity
+                    TriggerManager.toChannelAlpha(objectData.opacity)
                 );
                 colorTrigger = [
                     ColorChannelManager.BG,
@@ -159,7 +173,7 @@ export class TriggerManager extends Component {
                     objectData.red,
                     objectData.green,
                     objectData.blue,
-                    objectData.opacity
+                    TriggerManager.toChannelAlpha(objectData.opacity)
                 );
                 colorTrigger = [
                     ColorChannelManager.G1,
@@ -177,7 +191,7 @@ export class TriggerManager extends Component {
                     objectData.red,
                     objectData.green,
                     objectData.blue,
-                    objectData.opacity
+                    TriggerManager.toChannelAlpha(objectData.opacity)
                 );
                 colorTrigger = [
                     ColorChannelManager.OBJ,
@@ -195,7 +209,7 @@ export class TriggerManager extends Component {
                     objectData.red,
                     objectData.green,
                     objectData.blue,
-                    objectData.opacity
+                    TriggerManager.toChannelAlpha(objectData.opacity)
                 );
                 colorTrigger = [
                     ColorChannelManager._3DL,
@@ -213,7 +227,7 @@ export class TriggerManager extends Component {
                     objectData.red,
                     objectData.green,
                     objectData.blue,
-                    objectData.opacity
+                    TriggerManager.toChannelAlpha(objectData.opacity)
                 );
                 colorTrigger = [
                     ColorChannelManager.G2,
@@ -231,7 +245,7 @@ export class TriggerManager extends Component {
                     objectData.red,
                     objectData.green,
                     objectData.blue,
-                    objectData.opacity
+                    TriggerManager.toChannelAlpha(objectData.opacity)
                 );
                 colorTrigger = [
                     ColorChannelManager.LINE,
@@ -245,31 +259,15 @@ export class TriggerManager extends Component {
                 break;
             
             case Trigger.ENTER_SCALE_UP:
-                
-                enterEffectTrigger = [
-                    EnterEffect.SCALE_UP,
-                    objectData.x
-                ];
-
-                this.enterEffectTriggers.push(enterEffectTrigger);
-                this.allEnterEffectTriggers.push(enterEffectTrigger);
-                break;
-            
             case Trigger.ENTER_FLY_BOTTOM:
-                
-                enterEffectTrigger = [
-                    EnterEffect.FLY_BOTTOM,
-                    objectData.x
-                ];
-
-                this.enterEffectTriggers.push(enterEffectTrigger);
-                this.allEnterEffectTriggers.push(enterEffectTrigger);
-                break;
-
             case Trigger.ENTER_FLY_TOP:
+            case Trigger.ENTER_NONE:
+
+                const matchedName: string = Trigger[objectData.objectId];
+                const key: string = matchedName.replace(/^ENTER_/, "");
                 
                 enterEffectTrigger = [
-                    EnterEffect.FLY_TOP,
+                    EnterEffect[key as keyof typeof EnterEffect],
                     objectData.x
                 ];
 

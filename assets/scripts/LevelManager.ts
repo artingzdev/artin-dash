@@ -98,7 +98,8 @@ export class LevelManager extends Component {
                 const objectList = getCachedJson('objects').json as Record<string, any>;
                 this.levelSections.length = 0;
 
-                for (let i = 0; i < objects.length; i++) {
+                let currentLength = 0; // keep track of the level's length
+                for (let i = 0; i < objects.length; i++) { // loop through every object in the level and build them
                         const object = objects[i];
                         const objectID = object.objectId;
 
@@ -163,7 +164,11 @@ export class LevelManager extends Component {
                         (this.levelSections[sectionIndex] ??= []).push(collider); // build hitbox buckets
                         (this.levelBuckets[sectionIndex] ??= []).push(gameObj); // build object buckets
                         if (extraGameObj) (this.levelBuckets[sectionIndex] ??= []).push(extraGameObj);
+
+                        if (x > currentLength) currentLength = x; // update to get the final level length at the end
                 };
+                if (currentLength > 0) PlayLayer.get().levelLength = currentLength;
+                else PlayLayer.get().levelLength = null;
 
                 // -------- level color channels loading ----------------------------
                 const levelColors = header.color;
@@ -181,7 +186,7 @@ export class LevelManager extends Component {
 
                         //const copyID = c[9];
                         const blending = c[5] == "1";
-                        const opacity = parseInt(c[7]) * 255;
+                        const opacity = Math.round(parseFloat(c[7]) * 255);
 
                         ColorChannelManager.instance.setChannel(id, r, g, b, opacity, blending);
                         this.levelDefaultSettings.defaultChannelColors.push([id, r, g, b, opacity, blending]);

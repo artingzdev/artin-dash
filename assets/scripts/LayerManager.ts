@@ -31,10 +31,10 @@ export class LayerManager extends Component {
 
         const names = Object.keys(GameLayer).filter(k => isNaN(Number(k)));
 
-        root.setPosition(
-            -view.getVisibleSize().width / 2,
-            -view.getVisibleSize().height / 2
-        );
+        // root.setPosition(
+        //     -view.getVisibleSize().width / 2,
+        //     -view.getVisibleSize().height / 2
+        // );
 
         root.getComponent(UITransform).setAnchorPoint(0, 0);
 

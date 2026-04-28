@@ -1,4 +1,4 @@
-import { _decorator, AudioSource, Component, view } from 'cc';
+import { _decorator, AudioSource, clamp, Component, Label, view } from 'cc';
 import { ADGroundLayer } from './ADGroundLayer';
 import { getCachedMp3, settings } from './utils';
 import { ADBackgroundLayer } from './ADBackgroundLayer';
@@ -17,10 +17,13 @@ export class PlayLayer extends Component {
     @property(AudioSource)
     deathAudioSource: AudioSource = null!;
 
+    @property(Label)
+    percentageLabel: Label = null!;
+
     private static instance: PlayLayer = null;
 
     public static player1: PlayerObject = null;
-    public levelName: string = 'cantLetGoEdit';
+    public levelName: string = 'polargeistEdit';
     public levelMusicName: string = 'CantLetGo';
 
     private musicEnabled: boolean = false;
@@ -28,6 +31,9 @@ export class PlayLayer extends Component {
 
     private levelStartDelay: number = 0;
     private preparedMusicName: string | null = null;
+    public levelLength: number | null = null;
+
+    public static percentage: number = 0;
 
     protected onLoad(): void {
         PlayLayer.instance = this;
@@ -116,5 +122,24 @@ export class PlayLayer extends Component {
 
         this.deathAudioSource.currentTime = 0;
         this.deathAudioSource.play();
+    }
+
+    private updatePercentage() {
+        const pX = PlayLayer.player1.getPositionX();
+        const len = this.levelLength;
+
+        if (pX == null || len == null || len <= 0 || !this.percentageLabel) return;
+
+        const percentage = Math.floor(100 / len * pX);
+        const clampedPercentage = clamp(percentage, 0, 100);
+
+        if (PlayLayer.percentage != clampedPercentage) { // only update progress bar if needed
+            this.percentageLabel.string = `${clampedPercentage}%`;
+            PlayLayer.percentage = clampedPercentage;
+        }
+    }
+
+    protected lateUpdate(dt: number): void {
+        this.updatePercentage();
     }
 }

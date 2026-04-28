@@ -146,7 +146,7 @@ export class PlayerObject extends GameObject {
         public static t1Node: Node | null = null;
 
         onLoad() {
-                PlayerObject.t1Node = find('Canvas/RenderLayers/T1');
+                PlayerObject.t1Node = find('WorldCanvas/RenderLayers/T1');
         }
 
         private static resolveT1Layer(): Node | null {
@@ -154,7 +154,7 @@ export class PlayerObject extends GameObject {
                 if (cached && cached.isValid) {
                         return cached;
                 }
-                const found = find('Canvas/RenderLayers/T1');
+                const found = find('WorldCanvas/RenderLayers/T1');
                 this.t1Node = found ?? null;
                 return this.t1Node;
         }
@@ -210,7 +210,7 @@ export class PlayerObject extends GameObject {
                         event.keyCode === KeyCode.KEY_W
                 ) {
                         this.jumpHeld = true;
-                        if (this.isGrounded) this.jump();
+                        this.jump();
                 }
                 else if (event.keyCode == KeyCode.KEY_R && !PlayerObject.isDead) {
                         this.respawnPlayer();
@@ -232,7 +232,7 @@ export class PlayerObject extends GameObject {
 
         private onTouchStart(_event: EventTouch): void {
                 this.jumpHeld = true;
-                if (this.isGrounded) this.jump();
+                this.jump();
         }
 
         private onTouchEnd(_event: EventTouch): void {
@@ -243,7 +243,7 @@ export class PlayerObject extends GameObject {
         private onMouseDown(event: EventMouse): void {
                 if (event.getButton() == EventMouse.BUTTON_LEFT) {
                         this.jumpHeld = true;
-                        if (this.isGrounded) this.jump();
+                        this.jump();
                 }
         }
 
@@ -255,9 +255,7 @@ export class PlayerObject extends GameObject {
         }
 
         private handleInput(): void {
-                if (this.jumpHeld && this.isGrounded) {
-                        this.jump();
-                }
+                this.jump();
         }
         //----------------------------------------------------------------------------------
 
@@ -429,7 +427,7 @@ export class PlayerObject extends GameObject {
         }
 
         private updateRotationSnap(): void {
-                const interpFactor = 0.29;
+                const interpFactor = 0.3;
 
                 const rotationDegrees = this.getVisualRotation();
                 const targetRot = this.convertToClosestRotation(
@@ -523,19 +521,17 @@ export class PlayerObject extends GameObject {
                 // The smallest overlap is the axis/side the collision came from
                 const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
 
-                if (minOverlap === overlapLeft)   return CollisionSide.RIGHT;
-                if (minOverlap === overlapRight)  return CollisionSide.LEFT;
-                if (minOverlap === overlapTop)    return CollisionSide.BOTTOM;
-                if (minOverlap === overlapBottom) return CollisionSide.TOP;
-                else return CollisionSide.NONE
+                const epsilon = 0.001; // small margin of error for floating point precision issues
+                if (Math.abs(minOverlap - overlapLeft)   < epsilon) return CollisionSide.RIGHT;
+                if (Math.abs(minOverlap - overlapRight)  < epsilon) return CollisionSide.LEFT;
+                if (Math.abs(minOverlap - overlapTop)    < epsilon) return CollisionSide.BOTTOM;
+                if (Math.abs(minOverlap - overlapBottom) < epsilon) return CollisionSide.TOP;
+                return CollisionSide.NONE;
         }
 
         private getActiveCollision(): number {
                 if (PlayerObject.isDead) return;
                 const nearbyObjects = LevelManager.getNearbySectionObjects(this.node.position.x);
-
-                const isMovingDown = this.yVelocity <=0;
-                const isMovingUp = this.yVelocity >=0;
 
                 // loop through nearby objects and check for a collision
                 if (nearbyObjects.length === 0) return CollisionSide.NONE;
@@ -566,6 +562,9 @@ export class PlayerObject extends GameObject {
                 this.currentRingOverlaps.clear()
 
                 for (let i = 0; i < nearbyObjects.length; i++) {
+                        const isMovingDown = this.yVelocity <=0;
+                        const isMovingUp = this.yVelocity >=0;
+
                         const object = nearbyObjects[i];
 
                         objRect.x = object.x - object.w * 0.5;
@@ -609,11 +608,13 @@ export class PlayerObject extends GameObject {
 
                                                                 this.onLanded(objRect.yMax + halfHOuter);
                                                                 solidCollisionResult = CollisionSide.BOTTOM;
+                                                                break;
                                                         case CollisionSide.TOP:
                                                                 if (!this.isUpsideDown || !isMovingUp) break;
 
                                                                 this.onLanded(objRect.yMin - halfHOuter);
                                                                 solidCollisionResult = CollisionSide.TOP;
+                                                                break;
                                                         case CollisionSide.RIGHT:
                                                                 // snap the player to the block if close enough
                                                                 if (!this.isGrounded) {
@@ -955,17 +956,28 @@ export class PlayerObject extends GameObject {
                 this.rotationDir = this.isUpsideDown ? -1 : 1;
         }
 
-        private jump(): void {
-                this.isGrounded = false;
-                this.canRingJump = false;
-                this.setYVelocity(
-                        this.isUpsideDown
-                                ? -this.jumpVelocity
-                                : this.jumpVelocity
-              
-                );
-                
-                this.rotationDir = this.isUpsideDown ? -1 : 1;
+        private jump(): void
+        {
+                switch(this.gamemode)
+                {
+                        case Gamemode.CUBE:
+                                if (this.jumpHeld && this.isGrounded)
+                                {
+                                        this.isGrounded = false;
+                                        this.canRingJump = false;
+                                        this.setYVelocity(
+                                                this.isUpsideDown
+                                                        ? -this.jumpVelocity
+                                                        : this.jumpVelocity
+                                
+                                        );
+                                        
+                                        this.rotationDir = this.isUpsideDown ? -1 : 1;                        
+                                }                                
+                                break;
+
+                        default: break;
+                }
         }
 
         public spawnPlayerRipple(startRadius: number, endRadius: number, duration: number): void {

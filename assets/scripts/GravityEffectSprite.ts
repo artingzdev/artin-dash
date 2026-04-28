@@ -60,7 +60,8 @@ export class GravityEffectSprite extends Component {
 
                         setSpriteBlending(lineSprite, true);
 
-                        this.addComponent(UIOpacity).opacity = 150;
+                        const uiOpacity = this.getComponent(UIOpacity) ?? this.addComponent(UIOpacity);
+                        uiOpacity.opacity = 180;
                 }
                 
                 

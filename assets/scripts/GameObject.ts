@@ -74,8 +74,10 @@ export class GameObject extends Component {
         private static readonly OBJECT_PARTICLE_MAP = new Map<ObjectType, [string, Color | null]>([
                 [ObjectType.JUMP_PAD_YELLOW, ["bumpEffect", new Color(255, 255, 0, 255)]],
                 [ObjectType.JUMP_PAD_PINK, ["bumpEffect", new Color(255, 0, 255, 255)]],
+                [ObjectType.JUMP_PAD_RED, ["bumpEffect", new Color(255, 0, 0, 255)]],
                 [ObjectType.JUMP_RING_YELLOW, ["ringEffect", new Color(255, 255, 0, 255)]],
                 [ObjectType.JUMP_RING_PINK, ["ringEffect", new Color(255, 0, 255, 255)]],
+                [ObjectType.JUMP_RING_RED, ["ringEffect", new Color(255, 0, 0, 255)]],
                 [ObjectType.GRAVITY_PORTAL_NORMAL, ["portalEffect01", null]],
                 [ObjectType.GRAVITY_PORTAL_INVERSE, ["portalEffect02", null]]
         ]);
