@@ -66,7 +66,7 @@ export class PlayLayer extends Component {
         this.initMusic(() => {
             this.scheduleOnce(() => {
                 this.musicSource.play();
-                PlayerObject.canStartPlaying = true;
+                PlayerObject.instance.canStartPlaying = true;
             }, this.levelStartDelay);
         });
 

@@ -11,6 +11,7 @@ import { GravityEffectSprite } from './GravityEffectSprite';
 import { PlayerStreak } from './PlayerStreak';
 import { CollisionRect } from './CollisionRect';
 import { PlayLayer } from './PlayLayer';
+import { GhostTrailEffect } from './GhostTrailEffect';
 const { ccclass } = _decorator;
 
 export enum Gamemode {
@@ -58,6 +59,7 @@ export class PlayerObject extends GameObject {
         private unbindSecondary: (() => void) | null = null;
         private unbindGlow: (() => void) | null = null;
         private particleColor: Color = new Color(255, 255, 255, 255);
+        private static _instance: PlayerObject = null;
 
         // **PlayerObject members**---------------------
         // current icons
@@ -72,19 +74,18 @@ export class PlayerObject extends GameObject {
 
         // player physics
         public yVelocity: number = 0; // units/sec
-        public static xVelocity: number = 0; //units/sec
-        //public gravity: number = 0;
+        public xVelocity: number = 0; //units/sec
         public gravity: number = 0; // units/sec^2
         public jumpVelocity: number = 0; // units/sec
         public playerSpeed: number = 0.9; // mirrors m_playerSpeed
         public speedMultiplier: number = 5.77000189;
-        private rotationDir: number = 1;
+        private rotationDir: number = 1; // 1/-1
 
         // player state
-        public static canStartPlaying = false;
+        public canStartPlaying = false;
         public isUpsideDown: boolean = false;
         public isMini: boolean = false;
-        public hasGlow: boolean = true;
+        public glowEnabled: boolean = true;
         public isGrounded: boolean = false;
         public jumpHeld: boolean = false;
         public attemptCount: number = 1
@@ -92,7 +93,7 @@ export class PlayerObject extends GameObject {
         public hasLanded: boolean = false;
         public isFixedMode: boolean = false; // every gamemode except robot and cube (the ones with ceilings)
         public isRespawning: boolean = false;
-        public static isDead: boolean = false;
+        public isDead: boolean = false;
         private canRingJump: boolean = true;
         private shouldApplyTerminalVel: boolean = true; // boolean that controls whether or not terminal velocity should be applied
         private gravityEffectsPlaying: number = 0;
@@ -101,14 +102,14 @@ export class PlayerObject extends GameObject {
 
         // physics constants & state
         private accumulator: number = 0;
-        private static readonly TPS: number = 240;
-        private readonly FIXED_DT: number = 1/PlayerObject.TPS;
+        private readonly TPS: number = 240;
+        private readonly FIXED_DT: number = 1/this.TPS;
         private readonly MAX_PHYSICS_STEPS: number = 8;
         
         // gamemode
         public gamemode: Gamemode = Gamemode.CUBE;
 
-        // other
+        // miscellaneous
         public dragEffect: ParticleSystem2D = null;
         private playerParticles: ParticleSystem2D[] = [];
         private spawnBlinkDuration: number = 0.4; // seconds
@@ -116,11 +117,11 @@ export class PlayerObject extends GameObject {
         private blinkTimer: number | null = null;
         private respawnDelay: number = 1; // seconds
         private maxGravityEffects: number = 4;
+        public playerMainFrame: SpriteFrame | null = null;
 
         // hitbox/collision related
         public hitboxOuter: Size = new Size(30, 30);
         public hitboxInner: Size = new Size(9, 9);
-
         private readonly collisionPlayerRectOuter: Rect = new Rect();
         private readonly collisionPlayerRectInner: Rect = new Rect();
         private readonly collisionBlockRect: Rect = new Rect();
@@ -130,7 +131,7 @@ export class PlayerObject extends GameObject {
         // delta position tracking
         private lastX: number = 0;
         private lastY: number = 15;
-        public static deltaPos: Vec2 = new Vec2(0, 0);
+        public deltaPos: Vec2 = new Vec2(0, 0);
 
         // visual branches
         private visualRoot: Node = null;
@@ -142,14 +143,19 @@ export class PlayerObject extends GameObject {
         public cubeSecondaryNode: Node = null;
         public cubeGlowNode: Node = null;
 
-        // game layer nodes
-        public static t1Node: Node | null = null;
+        // game layer node references
+        public t1Node: Node | null = null;
 
-        onLoad() {
-                PlayerObject.t1Node = find('WorldCanvas/RenderLayers/T1');
+        public static get instance(): PlayerObject {
+                return PlayerObject._instance;
         }
 
-        private static resolveT1Layer(): Node | null {
+        onLoad() {
+                this.t1Node = find('WorldCanvas/RenderLayers/T1');
+                PlayerObject._instance = this;
+        }
+
+        private resolveT1Layer(): Node | null {
                 const cached = this.t1Node;
                 if (cached && cached.isValid) {
                         return cached;
@@ -212,7 +218,7 @@ export class PlayerObject extends GameObject {
                         this.jumpHeld = true;
                         this.jump();
                 }
-                else if (event.keyCode == KeyCode.KEY_R && !PlayerObject.isDead) {
+                else if (event.keyCode == KeyCode.KEY_R && !this.isDead) {
                         this.respawnPlayer();
                         this.jumpHeld = false;
                         this.canRingJump = true;
@@ -296,7 +302,7 @@ export class PlayerObject extends GameObject {
                 const cubeGlowFrame = getCachedSpriteFrameFromAtlas(`icons/player_${formattedCubeID}-uhd`, `player_${formattedCubeID}_glow_001`);
                 this.cubeGlowNode = AD.createSprite(this.visualRoot, "player-sprite", cubeGlowFrame);  
 
-                this.cubeGlowNode.active = this.hasGlow; // disable if player glow is turned off
+                this.cubeGlowNode.active = this.glowEnabled; // disable if player glow is turned off
 
                 // const cubeExtraFrame = getCachedSpriteFrameFromAtlas(`icons/player_${formattedCubeID}-uhd`, `player_${formattedCubeID}_extra_001`);
                 // const cubeExtraNode = ADNode.createSprite(this.visualRoot, "player-sprite", cubeExtraFrame);
@@ -308,6 +314,16 @@ export class PlayerObject extends GameObject {
                 this.unbindPrimary = this.bindToChannelPrimary(ColorChannelManager.P1);
                 this.unbindSecondary = this.bindToChannelSecondary(ColorChannelManager.P2);
                 this.unbindGlow = this.bindToChannelGlow(ColorChannelManager.PGLOW);
+
+                // set the gamemode sprite frame for the ghost trail effect
+                switch(this.gamemode) {
+                        case Gamemode.CUBE:
+                                this.playerMainFrame = cubePrimaryFrame;
+                                break;
+                        default:
+                                break;
+                }
+                GhostTrailEffect.instance.updateGhostTrailIcon();
         }
 
         protected bindToChannelPrimary(id: number): () => void {
@@ -365,12 +381,12 @@ export class PlayerObject extends GameObject {
 
         public enableGlow(): void {
                 this.cubeGlowNode.active = true;
-                this.hasGlow = true;
+                this.glowEnabled = true;
         }
 
         public disableGlow(): void {
                 this.cubeGlowNode.active = false;
-                this.hasGlow = false;
+                this.glowEnabled = false;
         }
 
         private updateTimeMod(): void {
@@ -379,32 +395,32 @@ export class PlayerObject extends GameObject {
                         case 0.7:
                                 this.jumpVelocity = 573.482;
                                 this.gravity = 2765.36 * flipDir;
-                                PlayerObject.xVelocity = 251.1601;
+                                this.xVelocity = 251.1601;
                                 break;
                         case 0.9:
                                 this.jumpVelocity = 603.72;
                                 this.gravity = 2765.36 * flipDir;
-                                PlayerObject.xVelocity = 311.5801;
+                                this.xVelocity = 311.5801;
                                 break;
                         case 1.1:
                                 this.jumpVelocity = 616.682;
                                 this.gravity = 2765.36 * flipDir;
-                                PlayerObject.xVelocity = 387.4201;
+                                this.xVelocity = 387.4201;
                                 break;
                         case 1.3:
                                 this.jumpVelocity = 606.422;
                                 this.gravity = 2765.36 * flipDir;
-                                PlayerObject.xVelocity = 468.0001;
+                                this.xVelocity = 468.0001;
                                 break;
                         case 1.6:
                                 this.jumpVelocity = 606.422;
                                 this.gravity = 2765.36 * flipDir;
-                                PlayerObject.xVelocity = 576.0002;
+                                this.xVelocity = 576.0002;
                                 break;
                         default:
                                 this.jumpVelocity = 603.722;
                                 this.gravity = 2765.36 * flipDir;
-                                PlayerObject.xVelocity = 311.5801;
+                                this.xVelocity = 311.5801;
                                 break;
                 }
         }
@@ -427,7 +443,7 @@ export class PlayerObject extends GameObject {
         }
 
         private updateRotationSnap(): void {
-                const interpFactor = 0.3;
+                const interpFactor = 0.29;
 
                 const rotationDegrees = this.getVisualRotation();
                 const targetRot = this.convertToClosestRotation(
@@ -484,7 +500,7 @@ export class PlayerObject extends GameObject {
                 this.visualRoot.angle = -degrees;
         }
 
-        protected getVisualRotation(): number {
+        public getVisualRotation(): number {
                 return -this.visualRoot.angle;
         }
 
@@ -530,7 +546,7 @@ export class PlayerObject extends GameObject {
         }
 
         private getActiveCollision(): number {
-                if (PlayerObject.isDead) return;
+                if (this.isDead) return;
                 const nearbyObjects = LevelManager.getNearbySectionObjects(this.node.position.x);
 
                 // loop through nearby objects and check for a collision
@@ -788,12 +804,20 @@ export class PlayerObject extends GameObject {
                 this.rotationDir = this.isUpsideDown ? -1 : 1;
         }
 
+        public enableGhostTrail(): void {
+                GhostTrailEffect.instance.ghostTrailEnabled = true;
+        }
+
+        public disableGhostTrail(): void {
+                GhostTrailEffect.instance.ghostTrailEnabled = false;
+        }
+
         private playPortalEffect(portalNumber: number, x: number, y: number, circleColor: {r: number, g: number, b: number}, rotation: number = 0): void {
                 const portalCircle = this.createCircleWave(45, 10, 0.3, circleColor, true, 'in');
                 LayerManager.addToLayer(portalCircle, GameLayer.T1);
                 portalCircle.setPosition(x, y);
 
-                const t1Layer = PlayerObject.resolveT1Layer();
+                const t1Layer = this.resolveT1Layer();
                 const formattedPortalNum = portalNumber.toString().padStart(2, '0');
 
                 const portalShineFrontFrame = getCachedSpriteFrameFromAtlas("GJ_GameSheet04-uhd", `portalshine_${formattedPortalNum}_front_001/spriteFrame`);
@@ -1052,10 +1076,11 @@ export class PlayerObject extends GameObject {
                 this.isRespawning = true;
                 this.flipGravity(false, true);
                 this.setDead(false);
-                PlayerObject.deltaPos.set(0, 0);
+                this.deltaPos.set(0, 0);
 
                 PlayerStreak.get().setAttached(false);
                 PlayerStreak.get().getComponent(MotionStreak).reset();
+                this.disableGhostTrail();
                 this.rotationDir = 1;
 
                 const cameraY = CameraController.getHalfHeight() - settings.defaultCameraOffsetY;
@@ -1070,7 +1095,7 @@ export class PlayerObject extends GameObject {
                 this.attemptCount++;
 
                 this.setYVelocity(0);
-                PlayerObject.xVelocity = 0;
+                this.xVelocity = 0;
 
                 this.playSpawnEffect();
 
@@ -1090,7 +1115,7 @@ export class PlayerObject extends GameObject {
         }
 
         private setDead(dead: boolean) {
-                PlayerObject.isDead = dead;
+                this.isDead = dead;
         }
 
         private createCircleWave(
@@ -1184,11 +1209,12 @@ export class PlayerObject extends GameObject {
         }
 
         protected destroyPlayer(): void {
-                if (PlayerObject.isDead) return;
+                if (this.isDead) return;
 
                 this.setDead(true);
                 PlayLayer.get().stopMusic();
                 PlayLayer.get().playDeathSound();
+                this.disableGhostTrail();
                 this.playDeathEffect();
 
                 this.scheduleOnce(() => {
@@ -1264,7 +1290,7 @@ export class PlayerObject extends GameObject {
 
         private updateCollisionStatus(dt: number) {
                 const collisionSide = this.getActiveCollision();
-                if (PlayerObject.isDead) return;
+                if (this.isDead) return;
 
                 // collision states
                 const hitGround = collisionSide == CollisionSide.BOTTOM;
@@ -1298,7 +1324,7 @@ export class PlayerObject extends GameObject {
         }
 
         private updateDragEffect(): void {
-                if (PlayerObject.isDead) {
+                if (this.isDead) {
                         this.dragEffect.stopSystem();
                         this.dragEffectRunning = false;
                         return;
@@ -1355,8 +1381,8 @@ export class PlayerObject extends GameObject {
         private fixedUpdate(dt: number): void { // run fixed timestep physics
                 if (
                         !LevelManager.levelLoadingFinished ||
-                        PlayerObject.isDead ||
-                        !PlayerObject.canStartPlaying
+                        this.isDead ||
+                        !this.canStartPlaying
                 ) return;
 
                 this.updateTimeMod();
@@ -1376,7 +1402,7 @@ export class PlayerObject extends GameObject {
 
                 AD.moveBy(
                         this.node,
-                        PlayerObject.xVelocity * dt,
+                        this.xVelocity * dt,
                         this.yVelocity * dt
                 );
 
@@ -1403,9 +1429,9 @@ export class PlayerObject extends GameObject {
                 }
 
                 // compute delta x and y
-                const deltaPos = PlayerObject.deltaPos;
-                PlayerObject.deltaPos.x = this.node.position.x - this.lastX;
-                PlayerObject.deltaPos.y = this.node.position.y - this.lastY;
+                const deltaPos = this.deltaPos;
+                this.deltaPos.x = this.node.position.x - this.lastX;
+                this.deltaPos.y = this.node.position.y - this.lastY;
                 this.lastX = this.node.position.x;
                 this.lastY = this.node.position.y;
 

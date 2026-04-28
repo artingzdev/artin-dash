@@ -5,7 +5,8 @@
     "version": "3.8.8"
   },
   "scripts": {
-    "deploy": "gh-pages -d build/web-desktop --nojekyll"
+    "predeploy": "gh-pages-clean",
+    "deploy": "gh-pages -d build/web-desktop -b gh-pages -r https://github.com/artingzdev/artin-dash.git --nojekyll --before-add ./scripts/prepare-gh-pages.cjs"
   },
   "devDependencies": {
     "gh-pages": "^6.x.x"

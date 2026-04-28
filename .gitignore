@@ -28,4 +28,7 @@ extract.py
 todo.md
 .creator
 defaults
-settings/
+settings
+build-templates
+*.scene
+*.meta

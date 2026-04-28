@@ -2,6 +2,7 @@ import { _decorator, Color, Component } from 'cc';
 import { ColorChannelManager } from './ColorChannelManager';
 import { PlayLayer } from './PlayLayer';
 import { EnterEffect, EnterEffectManager } from './EnterEffectManager';
+import { PlayerObject } from './PlayerObject';
 const { ccclass, property } = _decorator;
 
 enum Trigger {
@@ -16,7 +17,10 @@ enum Trigger {
     ENTER_NONE = 22,
     ENTER_SCALE_UP = 27,
     ENTER_FLY_BOTTOM = 23,
-    ENTER_FLY_TOP = 24
+    ENTER_FLY_TOP = 24,
+
+    GHOST_ENABLE = 32,
+    GHOST_DISABLE = 33
 }
 
 interface ActiveColorTransition {
@@ -36,6 +40,9 @@ export class TriggerManager extends Component {
 
     public static enterEffectTriggers:[type: EnterEffect, x: number][] = [];
     public static allEnterEffectTriggers:[type: EnterEffect, x: number][] = [];
+
+    public static ghostTriggers: [enabled: boolean, x: number][] = [];
+    public static allGhostTriggers: [enabled: boolean, x: number][] = [];
 
     // tracks all currently-running color transitions
     private static activeTransitions: ActiveColorTransition[] = [];
@@ -58,6 +65,8 @@ export class TriggerManager extends Component {
         TriggerManager.enterEffectTriggers.length = 0;
         TriggerManager.allEnterEffectTriggers.length = 0;
 
+        TriggerManager.ghostTriggers.length = 0;
+        TriggerManager.allGhostTriggers.length = 0;
 
         TriggerManager.activeTransitions.length = 0;
     }
@@ -67,7 +76,9 @@ export class TriggerManager extends Component {
             .map((trigger) => TriggerManager.cloneColorTrigger(trigger));
         TriggerManager.enterEffectTriggers = TriggerManager.allEnterEffectTriggers
             .map(([type, x]) => [type, x]);
-        
+        TriggerManager.ghostTriggers = TriggerManager.allGhostTriggers
+            .map(([enabled, x]) => [enabled, x]);
+
         TriggerManager.activeTransitions.length = 0;
         EnterEffectManager.currentEnterEffect = EnterEffect.NONE;
     }
@@ -274,6 +285,15 @@ export class TriggerManager extends Component {
                 this.enterEffectTriggers.push(enterEffectTrigger);
                 this.allEnterEffectTriggers.push(enterEffectTrigger);
                 break;
+
+            case Trigger.GHOST_DISABLE:
+                this.ghostTriggers.push([false, objectData.x]);
+                this.allGhostTriggers.push([false, objectData.x]);
+                break;
+            case Trigger.GHOST_ENABLE:
+                this.ghostTriggers.push([true, objectData.x]);
+                this.allGhostTriggers.push([true, objectData.x]);
+                break;
         }
     }
 
@@ -281,6 +301,7 @@ export class TriggerManager extends Component {
         const px = PlayLayer.player1.getPositionX();
         const sessionColorTriggers = TriggerManager.colorTriggers;
         const sessionEnterEffectTriggers = TriggerManager.enterEffectTriggers;
+        const sessionGhostTriggers = TriggerManager.ghostTriggers;
         
         for (let i = sessionColorTriggers.length - 1; i >= 0; i--) {
             const [channelID, x, duration, color, blending] = sessionColorTriggers[i];
@@ -295,6 +316,16 @@ export class TriggerManager extends Component {
             if (px >= x) {
                 EnterEffectManager.currentEnterEffect = type;
                 sessionEnterEffectTriggers.splice(i, 1);
+            }
+        }
+
+        for (let i = sessionGhostTriggers.length - 1; i >= 0; i--) {
+            const [enabled, x] = sessionGhostTriggers[i];
+            if (px >= x) {
+                enabled
+                    ? PlayerObject.instance.enableGhostTrail()
+                    : PlayerObject.instance.disableGhostTrail();
+                sessionGhostTriggers.splice(i, 1);
             }
         }
 
