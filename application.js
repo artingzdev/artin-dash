@@ -33,7 +33,22 @@ System.register([], function (_export, _context) {
         }, {
           key: "onPostSystemInit",
           value: function onPostSystemInit() {
-            // do custom logic
+            var gameDiv = document.getElementById('GameDiv');
+            var gameContainer = document.getElementById('Cocos3dGameContainer');
+            var gameCanvas = document.getElementById('GameCanvas');
+            var viewportWidth = window.innerWidth;
+            var viewportHeight = window.innerHeight;
+            [gameDiv, gameContainer, gameCanvas].forEach(function (element) {
+              if (!element) return;
+              element.style.width = viewportWidth + "px";
+              element.style.height = viewportHeight + "px";
+            });
+            if (cc.view && typeof cc.view.setFrameSize === 'function') {
+              cc.view.setFrameSize(viewportWidth, viewportHeight);
+            }
+            if (cc.view && typeof cc.view.resizeWithBrowserSize === 'function') {
+              cc.view.resizeWithBrowserSize(false);
+            }
           }
         }, {
           key: "start",
