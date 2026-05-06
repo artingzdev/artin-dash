@@ -1,4 +1,4 @@
-import { _decorator, clamp, Component, Node, Rect, Size, Sprite, SpriteFrame, UITransform, Vec2 } from 'cc';
+import { _decorator, clamp, Component, Node, Rect, Size, Sprite, SpriteFrame, UIOpacity, UITransform, Vec2 } from 'cc';
 import { fixSpriteScale, settings as gameSettings } from './utils';
 import { ADTileRow } from './ADTileRow';
 import { CollisionRect } from './CollisionRect';
@@ -177,6 +177,15 @@ export class AD extends Component {
         }
 
         return AD.rectIntersectsRotatedRect(playerRect, objectRect, objectRot);
+    }
+
+    public static setVisible(node: Node, visible: boolean): void {
+        if (!node) return;
+
+        const opacity = visible ? 255 : 0;
+        const uiOpacity = node.getComponent(UIOpacity) ?? node.addComponent(UIOpacity);
+
+        uiOpacity.opacity = opacity;
     }
 }
 

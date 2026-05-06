@@ -1,6 +1,7 @@
 import { _decorator, Color, Component, MotionStreak, Node } from 'cc';
 import { PlayLayer } from './PlayLayer';
 import { ColorChannelManager } from './ColorChannelManager';
+import { cosDeg, sinDeg } from './utils';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerStreak')
@@ -9,17 +10,19 @@ export class PlayerStreak extends Component {
         @property(MotionStreak)
         streak: MotionStreak = null!;
 
-        private static instance: PlayerStreak = null;
+        private static _instance: PlayerStreak = null;
 
         private attached: boolean = false;
         private unbind: (() => void) | null = null;
+        public offsetY: number = 0;
+        public offsetX: number = 0;
 
         protected onLoad(): void {
-                PlayerStreak.instance = this;
+                PlayerStreak._instance = this;
         }
 
-        public static get(): PlayerStreak {
-                return this.instance;
+        public static get instance(): PlayerStreak {
+                return this._instance;
         }
         
         protected start(): void {
@@ -49,7 +52,22 @@ export class PlayerStreak extends Component {
         private updateStreak(): void {
                 if (this.attached) {
                         const playerPos = PlayLayer.player1.getPosition();
-                        this.node.setPosition(playerPos);                        
+                        const shouldApplyRotation = this.offsetX != 0 && this.offsetY != 0;
+
+                        let newOffsetX = this.offsetX;
+                        let newOffsetY = this.offsetY;
+
+                        if (shouldApplyRotation) {
+                                const a = -PlayLayer.player1.playerRotation;
+                                newOffsetX = this.offsetX * cosDeg(a) - this.offsetY * sinDeg(a)
+                                newOffsetY = this.offsetX * sinDeg(a) + this.offsetY * cosDeg(a)
+                        }
+                        
+                        this.node.setPosition(
+                                playerPos.x + newOffsetX,
+                                playerPos.y + newOffsetY,
+                                playerPos.z
+                        );
                 }
         }
 

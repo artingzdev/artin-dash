@@ -1,7 +1,7 @@
-import { _decorator, BoxCollider2D, clamp, Color, EventKeyboard, EventMouse, EventTouch, find, Game, Graphics, Input, input, KeyCode, MotionStreak, Node, ParticleAsset, ParticleSystem2D, Rect, Size, Sprite, SpriteFrame, sys, tween, UIOpacity, Vec2, view } from 'cc';
+import { _decorator, BoxCollider2D, Camera, clamp, Color, EventKeyboard, EventMouse, EventTouch, find, Game, Graphics, Input, input, KeyCode, MotionStreak, Node, ParticleAsset, ParticleSystem2D, Rect, Size, sp, Sprite, SpriteFrame, sys, tween, UIOpacity, Vec2, view } from 'cc';
 import { GameObject, ObjectType } from './GameObject';
 import { GameLayer, LayerManager } from './LayerManager';
-import { drawPolygon, getCachedPlist, getCachedSpriteFrameFromAtlas, setGraphicsBlending, settings, slerp2D } from './utils';
+import { drawPolygon, getCachedMaterial, getCachedPlist, getCachedSpriteFrameFromAtlas, setGraphicsBlending, setParticleBlending, settings, slerpAngle, toDeg, toRad } from './utils';
 import { AD } from './AD';
 import { CameraController } from './CameraController';
 import { ColorChannelManager } from './ColorChannelManager';
@@ -13,6 +13,7 @@ import { CollisionRect } from './CollisionRect';
 import { PlayLayer } from './PlayLayer';
 import { GhostTrailEffect } from './GhostTrailEffect';
 const { ccclass } = _decorator;
+
 
 export enum Gamemode {
         CUBE,
@@ -26,11 +27,13 @@ export enum Gamemode {
 }
 
 const enum CollisionSide {
-    NONE = 0,
-    BOTTOM = 1,
-    TOP = 2,
-    LEFT = 3,
-    RIGHT = 4,
+    NONE,
+    BOTTOM,
+    TOP,
+    LEFT,
+    RIGHT,
+//     GROUND,
+//     CEILING
 }
 
 const enum RingType {
@@ -78,18 +81,21 @@ export class PlayerObject extends GameObject {
         public gravity: number = 0; // units/sec^2
         public jumpVelocity: number = 0; // units/sec
         public playerSpeed: number = 0.9; // mirrors m_playerSpeed
-        public speedMultiplier: number = 5.77000189;
+        public speedMultiplier: number = 5.770002;
         private rotationDir: number = 1; // 1/-1
+        private gravityDir: number = 1; // direction gravity is going. Used in gamemodes like the ship or wave.
+        private forceMult: number = 1;
 
         // player state
         public canStartPlaying = false;
         public isUpsideDown: boolean = false;
         public isMini: boolean = false;
-        public glowEnabled: boolean = true;
-        public isGrounded: boolean = false;
+        public glowEnabled: boolean = false;
+        public isOnSurface: boolean = true;
         public jumpHeld: boolean = false;
         public attemptCount: number = 1
         public dragEffectRunning: boolean = false;
+        public shipDragEffectRunning: boolean = false;
         public hasLanded: boolean = false;
         public isFixedMode: boolean = false; // every gamemode except robot and cube (the ones with ceilings)
         public isRespawning: boolean = false;
@@ -99,18 +105,28 @@ export class PlayerObject extends GameObject {
         private gravityEffectsPlaying: number = 0;
         private playerStreakActive: boolean = false;
         private canDieFromHitHead: boolean = true;
+        private isOnSlope: boolean = false;
+        private isDashing: boolean = false;
+        private isMirrored: boolean = false;
+        private becameShipThisTick: boolean = false;
+        private isAccelerating: boolean = false;
+        private curCollisionSide: CollisionSide = CollisionSide.NONE;
+        
 
         // physics constants & state
         private accumulator: number = 0;
         private readonly TPS: number = 240;
         private readonly FIXED_DT: number = 1/this.TPS;
         private readonly MAX_PHYSICS_STEPS: number = 8;
+        private fixedUpdateScale: number = 1;
         
         // gamemode
         public gamemode: Gamemode = Gamemode.CUBE;
 
         // miscellaneous
         public dragEffect: ParticleSystem2D = null;
+        public shipDragEffect: ParticleSystem2D = null;
+        public shipFireEffect: ParticleSystem2D = null;
         private playerParticles: ParticleSystem2D[] = [];
         private spawnBlinkDuration: number = 0.4; // seconds
         private spawnBlinkCount: number = 4;
@@ -127,21 +143,59 @@ export class PlayerObject extends GameObject {
         private readonly collisionBlockRect: Rect = new Rect();
         private currentRingOverlaps: Set<CollisionRect> = new Set();
         private prevRingOverlaps: Set<CollisionRect> = new Set();
+        private worldGroundY: number = 0;
+        private worldCeilingY: number | null = null; 
+
+        // node/transform related
+        public playerRotation: number = 0;
 
         // delta position tracking
         private lastX: number = 0;
         private lastY: number = 15;
         public deltaPos: Vec2 = new Vec2(0, 0);
+        private lastPosition: Vec2 = new Vec2(0, 0);
+        private curPosition: Vec2 = new Vec2(0, 0);
 
         // visual branches
         private visualRoot: Node = null;
-        private particleRoot: Node = null;
-        private deathEffectRoot: Node = null;
+        private particleRootLower: Node = null;
+        private particleRootUpper: Node = null;
 
-        // gamemode nodes
+        // gamemode nodes -----------------------------
+
+        public cubeRoot: Node = null;
         public cubePrimaryNode: Node = null;
         public cubeSecondaryNode: Node = null;
         public cubeGlowNode: Node = null;
+
+        public shipRoot: Node = null;
+        public shipPrimaryNode: Node = null;
+        public shipSecondaryNode: Node = null;
+        public shipGlowNode: Node = null;
+
+        // vehicle (small cube inside gamemodes like ship and ufo)
+        public vehicleRoot: Node = null;
+        public vehiclePrimaryNode: Node = null;
+        public vehicleSecondaryNode: Node = null;
+        public vehicleGlowNode: Node = null;
+
+        //---------------------------------------------
+
+        // configs ------------------------------------
+
+        private readonly RING_CONFIG = {
+                [ObjectType.JUMP_RING_YELLOW]: { type: RingType.YELLOW, color: { r: 255, g: 255, b: 0 } },
+                [ObjectType.JUMP_RING_PINK]:   { type: RingType.PINK,   color: { r: 255, g: 0,   b: 255 } },
+                [ObjectType.JUMP_RING_RED]:    { type: RingType.RED,    color: { r: 255, g: 0,   b: 0 } }
+        };
+
+        private readonly PAD_CONFIG = {
+                [ObjectType.JUMP_PAD_YELLOW]: { type: PadType.YELLOW},
+                [ObjectType.JUMP_PAD_PINK]:   { type: PadType.PINK},
+                [ObjectType.JUMP_PAD_RED]:    { type: PadType.RED}
+        };
+
+        // --------------------------------------------
 
         // game layer node references
         public t1Node: Node | null = null;
@@ -216,12 +270,13 @@ export class PlayerObject extends GameObject {
                         event.keyCode === KeyCode.KEY_W
                 ) {
                         this.jumpHeld = true;
-                        this.jump();
+                        this.onButtonPressed();
                 }
-                else if (event.keyCode == KeyCode.KEY_R && !this.isDead) {
+                else if (event.keyCode === KeyCode.KEY_R && !this.isDead) {
                         this.respawnPlayer();
                         this.jumpHeld = false;
                         this.canRingJump = true;
+                        this.onButtonReleased();
                 }
         }
 
@@ -233,35 +288,42 @@ export class PlayerObject extends GameObject {
                 ) {
                         this.jumpHeld = false;
                         this.canRingJump = true;
+                        this.onButtonReleased();
                 }
         }
 
         private onTouchStart(_event: EventTouch): void {
                 this.jumpHeld = true;
-                this.jump();
+                this.onButtonPressed();
         }
 
         private onTouchEnd(_event: EventTouch): void {
                 this.jumpHeld = false;
                 this.canRingJump = true;
+                this.onButtonReleased();
         }
         
         private onMouseDown(event: EventMouse): void {
-                if (event.getButton() == EventMouse.BUTTON_LEFT) {
+                if (event.getButton() === EventMouse.BUTTON_LEFT) {
                         this.jumpHeld = true;
-                        this.jump();
+                        this.onButtonPressed();
                 }
         }
 
         private onMouseUp(event: EventMouse): void {
-                if (event.getButton() == EventMouse.BUTTON_LEFT) {
+                if (event.getButton() === EventMouse.BUTTON_LEFT) {
                         this.jumpHeld = false;
                         this.canRingJump = true;
                 }
+                this.onButtonReleased();
         }
 
         private handleInput(): void {
-                this.jump();
+                if (this.jumpHeld) {
+                        this.onButtonPressed();
+                } else {
+                        this.onButtonReleased();
+                }
         }
         //----------------------------------------------------------------------------------
 
@@ -270,45 +332,117 @@ export class PlayerObject extends GameObject {
                 // initialize some variables
                 this.lastX = this.node.position.x;
                 this.lastY = this.node.position.y;
+                this.lastPosition.set(this.node.position.x, this.node.position.y);
 
-                // setup player particles
-                this.particleRoot = new Node("particle-root");
-                this.node.addChild(this.particleRoot);
-                
-                const dragEffectNode = new Node("drag-effect");
-                this.dragEffect = dragEffectNode.addComponent(ParticleSystem2D);
-                this.dragEffect.file = getCachedPlist("dragEffect");
-                dragEffectNode.setPosition(-10, -13);
-                this.particleRoot.addChild(dragEffectNode);
+                // setup player particle root
+                this.particleRootLower = new Node("particle-root");
+                this.node.addChild(this.particleRootLower);
 
                 // setup visual root
                 this.visualRoot = new Node("visual-root");
                 this.visualRoot.addComponent(UIOpacity);
                 this.node.addChild(this.visualRoot);
 
-                // setup death effect root
-                this.deathEffectRoot = new Node("death-effect-root");
-                this.node.addChild(this.deathEffectRoot);
+                // setup upper particle root (above the player)
+                this.particleRootUpper = new Node("death-effect-root");
+                this.node.addChild(this.particleRootUpper);
+                
+                // setup player particle systems ----------------------------------------
+
+                const dragEffectNode = new Node("drag-effect");
+                this.dragEffect = dragEffectNode.addComponent(ParticleSystem2D);
+                this.dragEffect.file = getCachedPlist("dragEffect");
+                dragEffectNode.setPosition(-10, -13);
+                this.particleRootLower.addChild(dragEffectNode);
+
+                const shipDragEffectNode = new Node("ship-drag-effect");
+                this.shipDragEffect = shipDragEffectNode.addComponent(ParticleSystem2D);
+                this.shipDragEffect.file = getCachedPlist("shipDragEffect");
+                shipDragEffectNode.setPosition(1, -15);
+                this.particleRootUpper.addChild(shipDragEffectNode);
+                this.shipDragEffect.stopSystem();
+                setParticleBlending(this.shipDragEffect, true);
+
+                const shipFireEffectNode = new Node("ship-fire-effect");
+                this.shipFireEffect = shipFireEffectNode.addComponent(ParticleSystem2D);
+                this.shipFireEffect.file = getCachedPlist("shipFireEffect");
+                shipFireEffectNode.setPosition(-5, -7.5);
+                this.particleRootLower.addChild(shipFireEffectNode);
+                setParticleBlending(this.shipFireEffect, true);
+                this.shipFireEffect.stopSystem();
+                this.shipFireEffect.playOnLoad = false;
+
+                //-----------------------------------------------------------------------
                 
 
-                // CUBE MODE
-                const formattedCubeID = this.cubeID.toString().padStart(2, '0');
-                const cubeSecondaryFrame = getCachedSpriteFrameFromAtlas(`icons/player_${formattedCubeID}-uhd`, `player_${formattedCubeID}_2_001`);
-                this.cubeSecondaryNode = AD.createSprite(this.visualRoot, "player-sprite", cubeSecondaryFrame);
 
-                const cubePrimaryFrame = getCachedSpriteFrameFromAtlas(`icons/player_${formattedCubeID}-uhd`, `player_${formattedCubeID}_001`);
-                this.cubePrimaryNode = AD.createSprite(this.visualRoot, "player-sprite", cubePrimaryFrame);
 
-                const cubeGlowFrame = getCachedSpriteFrameFromAtlas(`icons/player_${formattedCubeID}-uhd`, `player_${formattedCubeID}_glow_001`);
-                this.cubeGlowNode = AD.createSprite(this.visualRoot, "player-sprite", cubeGlowFrame);  
+
+
+                // CUBE MODE ------------------------------------------------------------------------------------------------------------------
+                this.cubeRoot = new Node("cube-frame");
+
+                const formattedCubeId = this.cubeID.toString().padStart(2, '0');
+                const cubeSecondaryFrame = getCachedSpriteFrameFromAtlas(`icons/player_${formattedCubeId}-uhd`, `player_${formattedCubeId}_2_001`);
+                const cubePrimaryFrame = getCachedSpriteFrameFromAtlas(`icons/player_${formattedCubeId}-uhd`, `player_${formattedCubeId}_001`);
+                const cubeGlowFrame = getCachedSpriteFrameFromAtlas(`icons/player_${formattedCubeId}-uhd`, `player_${formattedCubeId}_glow_001`);
+                const cubeExtraFrame = getCachedSpriteFrameFromAtlas(`icons/player_${formattedCubeId}-uhd`, `player_${formattedCubeId}_extra_001`);
+
+                this.cubeSecondaryNode = AD.createSprite(this.cubeRoot, "player-sprite", cubeSecondaryFrame);
+                this.cubePrimaryNode = AD.createSprite(this.cubeRoot, "player-sprite", cubePrimaryFrame);
+                this.cubeGlowNode = AD.createSprite(this.cubeRoot, "player-sprite", cubeGlowFrame); 
+                const cubeExtraNode = AD.createSprite(this.cubeRoot, "player-sprite", cubeExtraFrame);
+
 
                 this.cubeGlowNode.active = this.glowEnabled; // disable if player glow is turned off
+                //------------------------------------------------------------------------------------------------------------------------------
 
-                // const cubeExtraFrame = getCachedSpriteFrameFromAtlas(`icons/player_${formattedCubeID}-uhd`, `player_${formattedCubeID}_extra_001`);
-                // const cubeExtraNode = ADNode.createSprite(this.visualRoot, "player-sprite", cubeExtraFrame);
 
-                // SHIP MODE (COMING SOONNNN)
+                // SHIP MODE -------------------------------------------------------------------------------------------------------------------
+                this.shipRoot = new Node("ship-frame");
 
+                const formattedShipId = this.shipID.toString().padStart(2, '0');
+                const shipSecondaryFrame = getCachedSpriteFrameFromAtlas(`icons/ship_${formattedShipId}-uhd`, `ship_${formattedShipId}_2_001`);
+                const shipPrimaryFrame = getCachedSpriteFrameFromAtlas(`icons/ship_${formattedShipId}-uhd`, `ship_${formattedShipId}_001`);
+                const shipGlowFrame = getCachedSpriteFrameFromAtlas(`icons/ship_${formattedShipId}-uhd`, `ship_${formattedShipId}_glow_001`);
+                const shipExtraFrame = getCachedSpriteFrameFromAtlas(`icons/ship_${formattedShipId}-uhd`, `ship_${formattedShipId}_extra_001`);
+                
+                this.shipSecondaryNode = AD.createSprite(this.shipRoot, "ship-sprite", shipSecondaryFrame);
+                this.shipPrimaryNode = AD.createSprite(this.shipRoot, "ship-sprite", shipPrimaryFrame);
+                this.shipGlowNode = AD.createSprite(this.shipRoot, "ship-sprite", shipGlowFrame);
+                const shipExtraNode = AD.createSprite(this.shipRoot, "ship-sprite", shipExtraFrame);
+
+                this.shipGlowNode.active = this.glowEnabled;
+
+                AD.moveBy(this.shipRoot, 0, -5);
+                //------------------------------------------------------------------------------------------------------------------------------
+
+
+                // PLAYER VEHICLE ICON ---------------------------------------------------------------------------------------------------------
+                this.vehicleRoot = new Node("vehicle-sprite-frame");
+
+                this.vehicleSecondaryNode = AD.createSprite(this.vehicleRoot, "vehicle-sprite", cubeSecondaryFrame);
+                this.vehiclePrimaryNode = AD.createSprite(this.vehicleRoot, "vehicle-sprite", cubePrimaryFrame);
+                this.vehicleGlowNode = AD.createSprite(this.vehicleRoot, "vehicle-sprite", cubeGlowFrame);
+                const vehicleExtraNode = AD.createSprite(this.vehicleRoot, "vehicle-sprite", cubeExtraFrame);
+
+                this.vehicleGlowNode.active = this.glowEnabled;
+                AD.moveBy(this.vehicleRoot, 0, 5);
+                AD.scaleBy(this.vehicleRoot, 0.55);
+                // -----------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+                // add the layers in order
+                this.visualRoot.addChild(this.cubeRoot);
+                this.visualRoot.addChild(this.vehicleRoot);
+                this.visualRoot.addChild(this.shipRoot);
+
+                // hide layers except cube by default
+                AD.setVisible(this.vehicleRoot, false);
+                AD.setVisible(this.shipRoot, false);
 
                 // bind colors
                 this.unbindPrimary = this.bindToChannelPrimary(ColorChannelManager.P1);
@@ -345,29 +479,41 @@ export class PlayerObject extends GameObject {
         }
 
         public changePrimaryColor(color: Color): void {
-                const cubePrimarySprite = this.cubePrimaryNode.getComponent(Sprite)!;
-                
                 const fixedColor = ColorChannelManager.getColor(color.r, color.g, color.b);
 
-                if (cubePrimarySprite) cubePrimarySprite.color = fixedColor;
+                const cube = this.cubePrimaryNode.getComponent(Sprite)!;
+                if (cube) cube.color = fixedColor;
+                const ship = this.shipPrimaryNode.getComponent(Sprite)!
+                if (ship) ship.color = fixedColor;
+                const vehicle = this.vehiclePrimaryNode.getComponent(Sprite)!;
+                if (vehicle) vehicle.color = fixedColor;
+
                 this.particleColor = ColorChannelManager.getColor(color.r, color.g, color.b, color.a);
                 this.applyColorToPlayerParticles(this.particleColor);
         }
 
         public changeSecondaryColor(color: Color): void {
-                const cubeSecondarySprite = this.cubeSecondaryNode.getComponent(Sprite)!;
 
                 const fixedColor = ColorChannelManager.getColor(color.r, color.g, color.b);
 
-                if (cubeSecondarySprite) cubeSecondarySprite.color = fixedColor;
+                const cube = this.cubeSecondaryNode.getComponent(Sprite)!;
+                if (cube) cube.color = fixedColor;
+                const ship = this.shipSecondaryNode.getComponent(Sprite)!
+                if (ship) ship.color = fixedColor;
+                const vehicle = this.vehicleSecondaryNode.getComponent(Sprite)!;
+                if (vehicle) vehicle.color = fixedColor;
         }
 
         public changeGlowColor(color: Color): void {
-                const cubeGlowSprite = this.cubeGlowNode.getComponent(Sprite)!;
 
                 const fixedColor = ColorChannelManager.getColor(color.r, color.g, color.b);
 
-                if (cubeGlowSprite) cubeGlowSprite.color = fixedColor;
+                const cube = this.cubeGlowNode.getComponent(Sprite)!;
+                if (cube) cube.color = fixedColor;
+                const ship = this.shipGlowNode.getComponent(Sprite)!
+                if (ship) ship.color = fixedColor;
+                const vehicle = this.vehicleGlowNode.getComponent(Sprite)!;
+                if (vehicle) vehicle.color = fixedColor;
         }
 
         static create(): PlayerObject {
@@ -389,44 +535,43 @@ export class PlayerObject extends GameObject {
                 this.glowEnabled = false;
         }
 
-        private updateTimeMod(): void {
-                const flipDir = this.isUpsideDown ? -1 : 1;
+        public updateTimeMod(): void {
                 switch(this.playerSpeed) {
                         case 0.7:
                                 this.jumpVelocity = 573.482;
-                                this.gravity = 2765.36 * flipDir;
+                                this.gravity = 2799.36;
                                 this.xVelocity = 251.1601;
                                 break;
                         case 0.9:
                                 this.jumpVelocity = 603.72;
-                                this.gravity = 2765.36 * flipDir;
+                                this.gravity = 2799.36;
                                 this.xVelocity = 311.5801;
                                 break;
                         case 1.1:
                                 this.jumpVelocity = 616.682;
-                                this.gravity = 2765.36 * flipDir;
+                                this.gravity = 2786.4;
                                 this.xVelocity = 387.4201;
                                 break;
                         case 1.3:
                                 this.jumpVelocity = 606.422;
-                                this.gravity = 2765.36 * flipDir;
+                                this.gravity = 2799.36;
                                 this.xVelocity = 468.0001;
                                 break;
                         case 1.6:
                                 this.jumpVelocity = 606.422;
-                                this.gravity = 2765.36 * flipDir;
+                                this.gravity = 2799.36;
                                 this.xVelocity = 576.0002;
                                 break;
                         default:
                                 this.jumpVelocity = 603.722;
-                                this.gravity = 2765.36 * flipDir;
+                                this.gravity = 2799.36;
                                 this.xVelocity = 311.5801;
                                 break;
                 }
         }
 
         private incrementRotation(rotation: number): void {
-                this.setVisualRotation(this.getVisualRotation() + rotation);
+                this.playerRotation += rotation;
         }
 
         private convertToClosestRotation(currentRotation: number, targetRotation: number): number {
@@ -434,54 +579,112 @@ export class PlayerObject extends GameObject {
 
                 const currentMod = Math.trunc(currentRotation) % 360;
 
-                // Find the nearest multiple of 90 below and above currentMod
+                // find the nearest multiple of 90 below and above currentMod
                 const lo = Math.floor(currentMod / 90) * 90;
                 const hi = lo + 90;
 
-                // Return whichever is closer
+                // return whichever is closer
                 return (currentMod - lo) <= (hi - currentMod) ? lo : hi;
         }
 
-        private updateRotationSnap(): void {
-                const interpFactor = 0.29;
-
-                const rotationDegrees = this.getVisualRotation();
-                const targetRot = this.convertToClosestRotation(
-                        rotationDegrees,
-                        Math.round(rotationDegrees / 90) * 90
-                )
-                let rotSpeed = this.playerSpeed * 0.175;
-                const gamemode = this.gamemode;
-
-                if (gamemode == Gamemode.SHIP) {
-                        rotSpeed *= 0.5;
-                }
-                else if (
-                        gamemode != Gamemode.BIRD &&
-                        gamemode != Gamemode.DART &&
-                        gamemode != Gamemode.SWING &&
-                        gamemode != Gamemode.BALL &&
-                        this.isGrounded
-                ) {
-                        rotSpeed *= 3.0;
+        private updateFlyRotation(dt: number) {
+                if (this.isOnSlope || this.isDashing || this.becameShipThisTick) {
+                        this.playerRotation = 0;
+                        return;
                 }
 
-                const t = (rotSpeed * interpFactor <= interpFactor) ? interpFactor * interpFactor : interpFactor;
+                const curPos = this.curPosition;
+                const lastPos = this.lastPosition;
+                const speed = dt * 0.45 / this.fixedUpdateScale; // slightly damped speed to match rotation speed of real GD
 
-                const slerpResult = slerp2D(
-                        rotationDegrees * 0.017453292,   // deg → rad
-                        targetRot        * 0.017453292,   // deg → rad
+                let dx: number;
+                let dy: number;
+
+                if (this.isFlyingMode() && this.isMirrored)
+                        dx = Math.abs(curPos.x -lastPos.x);
+                else
+                        dx = curPos.x - lastPos.x;
+
+                dy = -(curPos.y - lastPos.y);
+
+                const distSq = dx * dx + dy * dy;
+                const minAngle = -54.2 * 0.017453292;
+                const maxAngle = 47.96 * 0.017453292;
+
+                if (distSq > dt * 1.2 /*|| (m_isPlatformer && (m_isShip || m_isBird))*/) {
+                        let targetAngle  = Math.atan2(dy, dx);
+                        targetAngle = clamp(targetAngle, minAngle, maxAngle);
+                        const currentAngle = this.playerRotation * 0.017453292;
+                        let newAngle = slerpAngle(currentAngle, targetAngle, speed); 
+                        newAngle = clamp(newAngle, minAngle, maxAngle);
+                        this.playerRotation = newAngle * 57.29578;
+                }
+        }
+
+        private playerIsFalling(): boolean {
+                return this.yVelocity < 0;
+        }
+
+        private playerIsRising(): boolean {
+                return this.yVelocity > 0;
+        }
+
+        private playerIsFallingPastGravity(): boolean {
+                const baseGravity = 0.958199;
+                const threshold = -2 * baseGravity;
+                return this.yVelocity < threshold;
+        }
+
+        private isFlyingMode(): boolean {
+                return     this.gamemode === Gamemode.BIRD
+                        || this.gamemode === Gamemode.SHIP
+                        || this.gamemode === Gamemode.SWING
+                        || this.gamemode === Gamemode.DART
+        }
+
+        private updateRotationSnap(dt: number) {
+
+                if (this.isDashing) return;
+
+                const curRotationDeg = this.playerRotation;
+                let targetRot: number;
+                if (this.gamemode === Gamemode.SHIP) targetRot = 0;
+                else {
+                        targetRot = this.convertToClosestRotation(
+                                curRotationDeg,
+                                Math.round(curRotationDeg / 90) * 90
+                        )                        
+                }
+
+                let speed = this.playerSpeed * 0.175;
+
+                switch (this.gamemode) {
+                        case Gamemode.CUBE:
+                                speed *= 3.5;
+                                break;
+                        case Gamemode.SHIP:
+                                speed *= 0.7;
+                                break;
+                        default:
+                                break;
+                }
+
+                const t = clamp(speed * dt, 0, 1);
+
+                let result = slerpAngle(
+                        curRotationDeg * toRad,
+                        targetRot * toRad,
                         t
-                ) * 57.29578; // back to deg
+                ) * toDeg;
 
-                this.setVisualRotation(slerpResult);
+                this.playerRotation = result;
         }
 
         private updateRotationAirborne(dt: number): void {
                 // continuous cube rotation
                 const gamemode = this.gamemode;
-                const isCubeMode = gamemode == Gamemode.CUBE;
-                const shouldRotate = isCubeMode && !this.isGrounded;
+                const isCubeMode = gamemode === Gamemode.CUBE;
+                const shouldRotate = isCubeMode && !this.isOnSurface;
 
                 if (shouldRotate) {
                         const baseRotationSpeed = 180 * this.rotationDir;
@@ -507,17 +710,39 @@ export class PlayerObject extends GameObject {
         private clampTerminalVelocity(): void {
                 if (!this.shouldApplyTerminalVel) return;
 
-                let terminal = 810;
+                let terminalUp = 0;
+                let terminalDown = 0
                 const gamemode = this.gamemode;
 
                 switch (gamemode) {
+                        case Gamemode.CUBE:
+                        case Gamemode.BALL:
+                        case Gamemode.ROBOT:
+                        case Gamemode.SPIDER:
+                                terminalUp = 810;
+                                terminalDown = -810;
+                                break;
                         case Gamemode.SHIP:
-                                terminal = 345.6; break;
                         case Gamemode.BIRD:
-                                terminal = 345.6; break;
+                                terminalUp = 432;
+                                terminalDown = -345.6;
+                                break;
+                        case Gamemode.SWING:
+                                terminalUp = 432;
+                                terminalDown = -432;
+                                break;
+                        case Gamemode.DART:
+                                terminalUp = this.xVelocity;
+                                terminalDown = -this.xVelocity;
+                                break;
+                        default:
+                                terminalUp = 810;
+                                terminalDown = -810;
+                                break;
                 }
 
-                const clamped = clamp(this.yVelocity, -terminal, terminal);
+                if (!terminalDown || !terminalUp) return;
+                const clamped = clamp(this.yVelocity, terminalDown, terminalUp);
                 this.setYVelocity(clamped);
         }
 
@@ -545,12 +770,136 @@ export class PlayerObject extends GameObject {
                 return CollisionSide.NONE;
         }
 
-        private getActiveCollision(): number {
+        private resolveGroundCollisionsInternal(curSolidCollisionResult: CollisionSide, playerRectOuter: Rect, halfHOuter: number): CollisionSide {
+                
+                const collidingGround = playerRectOuter.yMin <= this.worldGroundY;
+                let landY: number;
+                if (collidingGround) {
+                        landY = this.worldGroundY + halfHOuter;
+                        curSolidCollisionResult = CollisionSide.BOTTOM;
+
+                        switch(this.gamemode) {
+                                case Gamemode.CUBE:
+                                        if (this.isUpsideDown && this.canDieFromHitHead) {
+                                                this.destroyPlayer();
+                                                break;
+                                        }
+                                        this.onSurfaceContact(landY);
+                                        break;
+                                case Gamemode.SHIP:
+                                        this.onSurfaceContact(landY);
+                                        break;
+                        }
+                }
+                const collidingCeiling = this.worldCeilingY != null && playerRectOuter.yMax >= this.worldCeilingY;
+                        
+                if (collidingCeiling) {
+                        landY = this.worldCeilingY - halfHOuter;
+                        curSolidCollisionResult = CollisionSide.TOP;
+
+                        switch(this.gamemode) {
+                                case Gamemode.CUBE:
+                                        if (!this.isUpsideDown && this.canDieFromHitHead) {
+                                                this.destroyPlayer();
+                                                break;
+                                        }
+                                        this.onSurfaceContact(landY);
+                                        break;
+                                case Gamemode.SHIP:
+                                        this.onSurfaceContact(landY);
+                                        break;
+                        }
+                }
+                return curSolidCollisionResult;
+        }
+
+        private resolveSolidCollisionsInternal(curSolidCollisionResult: CollisionSide, playerRectOuter: Rect, playerRectInner: Rect, objRect: Rect): CollisionSide {
+                const isCollidingOuter: boolean = playerRectOuter.intersects(objRect);
+                const isCollidingInner: boolean = playerRectInner.intersects(objRect);
+
+                let collisionSide: CollisionSide;
+
+                if (isCollidingInner) { // inner player hitbox
+                        
+                        collisionSide = this.getCollisionSide(playerRectInner, objRect);
+
+                        switch(collisionSide) {
+                                case CollisionSide.BOTTOM:
+                                        if (this.canDieFromHitHead) this.destroyPlayer();
+                                        curSolidCollisionResult = CollisionSide.BOTTOM;
+                                        break;
+                                case CollisionSide.TOP:
+                                        if (this.canDieFromHitHead) this.destroyPlayer();
+                                        curSolidCollisionResult = CollisionSide.TOP;
+                                        break;
+                                case CollisionSide.RIGHT:
+                                        this.destroyPlayer();
+                                        curSolidCollisionResult = CollisionSide.RIGHT;
+                                        break;
+                        }
+                }
+                else if (isCollidingOuter) { // outer player hitbox
+                        const halfHOuter = playerRectOuter.height * 0.5;
+
+                        collisionSide = this.getCollisionSide(playerRectOuter, objRect);
+                        switch(collisionSide) {
+                                case CollisionSide.BOTTOM: 
+                                        switch(this.gamemode) {
+                                                case Gamemode.CUBE:
+                                                        if (!this.isUpsideDown && this.playerIsFalling()) {
+                                                                this.onSurfaceContact(objRect.yMax + halfHOuter);
+                                                                curSolidCollisionResult = CollisionSide.BOTTOM;
+                                                        }
+                                                        break;
+                                                case Gamemode.SHIP:
+                                                        this.onSurfaceContact(objRect.yMax + halfHOuter);
+                                                        curSolidCollisionResult = CollisionSide.BOTTOM;
+                                                        break;
+                                        }
+                                        break;
+
+                                case CollisionSide.TOP:
+                                        switch(this.gamemode) {
+                                                case Gamemode.CUBE:
+                                                        if (this.isUpsideDown && this.playerIsRising()) {
+                                                                this.onSurfaceContact(objRect.yMin - halfHOuter);
+                                                                curSolidCollisionResult = CollisionSide.TOP; 
+                                                        }
+                                                        break;
+                                                case Gamemode.SHIP:
+                                                        this.onSurfaceContact(objRect.yMin - halfHOuter);
+                                                        curSolidCollisionResult = CollisionSide.TOP; 
+                                                        break;
+                                        } 
+                                        break;
+                                case CollisionSide.RIGHT:
+                                        if (this.isOnSurface) break;
+                                        // snap the player to the block if close enough
+
+                                        if (!this.isUpsideDown && this.playerIsFalling()) {
+                                                if (playerRectInner.yMin >= objRect.yMax) {
+                                                        this.onSurfaceContact(objRect.yMax + halfHOuter);
+                                                        curSolidCollisionResult = CollisionSide.BOTTOM;
+                                                }
+                                        }
+                                        else if (this.isUpsideDown && this.playerIsRising()) {
+                                                if (playerRectInner.yMax <= objRect.yMin) {
+                                                        this.onSurfaceContact(objRect.yMin - halfHOuter);
+                                                        curSolidCollisionResult = CollisionSide.BOTTOM;
+                                                }
+                                        }       
+
+                                        break;
+                        }
+                }
+
+                return curSolidCollisionResult;
+        }
+
+        private checkCollisions(): CollisionSide {
                 if (this.isDead) return;
                 const nearbyObjects = LevelManager.getNearbySectionObjects(this.node.position.x);
-
-                // loop through nearby objects and check for a collision
-                if (nearbyObjects.length === 0) return CollisionSide.NONE;
+                const loopLen = nearbyObjects.length + 1; // add one for world ceiling and ground check
 
                 const px = this.node.position.x;
                 const py = this.node.position.y;
@@ -573,83 +922,37 @@ export class PlayerObject extends GameObject {
 
                 const objRect = this.collisionBlockRect;
 
-                let solidCollisionResult: number = CollisionSide.NONE;
+                let solidCollisionResult: CollisionSide = CollisionSide.NONE;
 
-                this.currentRingOverlaps.clear()
+                this.currentRingOverlaps.clear();
 
-                for (let i = 0; i < nearbyObjects.length; i++) {
-                        const isMovingDown = this.yVelocity <=0;
-                        const isMovingUp = this.yVelocity >=0;
+                // loop through nearby objects and check for a collision
+                for (let i = 0; i < loopLen; i++) {
+                        // resolve ground and ceiling cases first
+                        if (i === 0) {
+                                solidCollisionResult = this.resolveGroundCollisionsInternal(solidCollisionResult, playerRectOuter, halfHOuter);
+                                continue;
+                        }
 
-                        const object = nearbyObjects[i];
+                        // now move on to objects once ground and ceiling collisions are resolved
+
+                        const object = nearbyObjects[i - 1]; // subtract 1 to account for the first check being ground and ceiling
 
                         objRect.x = object.x - object.w * 0.5;
                         objRect.y = object.y - object.h * 0.5;
                         objRect.width = object.w;
                         objRect.height = object.h;
 
+                        let config: any;
+
+                        const collidingSensorAndDeactivated = 
+                                object.type != ObjectType.SOLID
+                                && !object.activated
+                                && AD.isColliding(playerRectOuter, objRect, object.rotation);
+
                         switch(object.type) {
                                 case ObjectType.SOLID:
-
-                                        const isCollidingOuter: boolean = playerRectOuter.intersects(objRect);
-                                        const isCollidingInner: boolean = playerRectInner.intersects(objRect);
-
-                                        let collisionSide: CollisionSide;
-
-                                        if (isCollidingInner) { // inner player hitbox
-                                                
-                                                collisionSide = this.getCollisionSide(playerRectInner, objRect);
-
-                                                switch(collisionSide) {
-                                                        case CollisionSide.BOTTOM:
-                                                                if (this.canDieFromHitHead) this.destroyPlayer();
-                                                                solidCollisionResult = CollisionSide.BOTTOM;
-                                                                break;
-                                                        case CollisionSide.TOP:
-                                                                if (this.canDieFromHitHead) this.destroyPlayer();
-                                                                solidCollisionResult = CollisionSide.TOP;
-                                                                break;
-                                                        case CollisionSide.RIGHT:
-                                                                this.destroyPlayer();
-                                                                solidCollisionResult = CollisionSide.RIGHT;
-                                                                break;
-                                                }
-                                                break;
-                                        }
-                                        else if (isCollidingOuter) { // outer player hitbox
-                                                collisionSide = this.getCollisionSide(playerRectOuter, objRect);
-                                                switch(collisionSide) {
-                                                        case CollisionSide.BOTTOM: 
-                                                                if (this.isUpsideDown || !isMovingDown) break;
-
-                                                                this.onLanded(objRect.yMax + halfHOuter);
-                                                                solidCollisionResult = CollisionSide.BOTTOM;
-                                                                break;
-                                                        case CollisionSide.TOP:
-                                                                if (!this.isUpsideDown || !isMovingUp) break;
-
-                                                                this.onLanded(objRect.yMin - halfHOuter);
-                                                                solidCollisionResult = CollisionSide.TOP;
-                                                                break;
-                                                        case CollisionSide.RIGHT:
-                                                                // snap the player to the block if close enough
-                                                                if (!this.isGrounded) {
-                                                                        if (!this.isUpsideDown && isMovingDown) {
-                                                                                if (playerRectInner.yMin >= objRect.yMax) {
-                                                                                        this.onLanded(objRect.yMax + halfHOuter);
-                                                                                        solidCollisionResult = CollisionSide.BOTTOM;
-                                                                                }
-                                                                        }
-                                                                        else if (this.isUpsideDown && isMovingUp) {
-                                                                                if (playerRectInner.yMax <= objRect.yMin) {
-                                                                                        this.onLanded(objRect.yMin - halfHOuter);
-                                                                                        solidCollisionResult = CollisionSide.BOTTOM;
-                                                                                }
-                                                                        }                                                                        
-                                                                }
-                                                                break;
-                                                }
-                                        }
+                                        solidCollisionResult = this.resolveSolidCollisionsInternal(solidCollisionResult, playerRectOuter, playerRectInner, objRect);
                                         break; 
                                         
                                 case ObjectType.HAZARD:
@@ -659,54 +962,18 @@ export class PlayerObject extends GameObject {
                                         break;
 
                                 case ObjectType.JUMP_RING_YELLOW:
-
-                                        if (AD.isColliding(playerRectOuter, objRect, object.rotation)) {
-                                                if (!object.activated && this.jumpHeld && this.canRingJump) {
-                                                        this.ringJump(RingType.YELLOW);
-                                                        object.activated = true;
-                                                        this.canRingJump = false;
-                                                        LevelManager.activatedObjects.push(object);
-
-                                                        this.playRingEffect(object, object.layer, object.x, object.y, {r: 255, g: 255, b: 0});
-                                                        
-                                                }
-                                                if (!this.prevRingOverlaps.has(object)) {
-                                                        this.spawnRingHitEffect(object.layer, object.x, object.y);
-                                                        
-                                                }
-                                                this.currentRingOverlaps.add(object);
-                                        }
-                                        break;
-
                                 case ObjectType.JUMP_RING_PINK:
-
-                                        if (AD.isColliding(playerRectOuter, objRect, object.rotation)) {
-                                                if (!object.activated && this.jumpHeld && this.canRingJump) {
-                                                        this.ringJump(RingType.PINK);
-                                                        object.activated = true;
-                                                        this.canRingJump = false;
-                                                        LevelManager.activatedObjects.push(object);
-
-                                                        this.playRingEffect(object, object.layer, object.x, object.y, {r: 255, g: 0, b: 255});
-                                                }
-                                                if (!this.prevRingOverlaps.has(object)) {
-                                                        this.spawnRingHitEffect(object.layer, object.x, object.y);
-                                                        
-                                                }
-                                                this.currentRingOverlaps.add(object);
-                                        }
-                                        break;
-                                
                                 case ObjectType.JUMP_RING_RED:
+                                        config = this.RING_CONFIG[object.type];
 
                                         if (AD.isColliding(playerRectOuter, objRect, object.rotation)) {
                                                 if (!object.activated && this.jumpHeld && this.canRingJump) {
-                                                        this.ringJump(RingType.RED);
+                                                        this.ringJump(config.type);
                                                         object.activated = true;
                                                         this.canRingJump = false;
                                                         LevelManager.activatedObjects.push(object);
 
-                                                        this.playRingEffect(object, object.layer, object.x, object.y, {r: 255, g: 0, b: 0});
+                                                        this.playRingEffect(object, object.layer, object.x, object.y, config.color);
                                                 }
                                                 if (!this.prevRingOverlaps.has(object)) {
                                                         this.spawnRingHitEffect(object.layer, object.x, object.y);
@@ -717,27 +984,13 @@ export class PlayerObject extends GameObject {
                                         break;
                                 
                                 case ObjectType.JUMP_PAD_YELLOW:
-
-                                        if (AD.isColliding(playerRectOuter, objRect, object.rotation) && !object.activated) {
-                                                this.padJump(PadType.YELLOW, object.layer, {x: object.x, y: object.y});
-                                                object.activated = true;
-                                                LevelManager.activatedObjects.push(object);
-                                        }
-                                        break;
-
                                 case ObjectType.JUMP_PAD_PINK:
-
-                                        if (AD.isColliding(playerRectOuter, objRect, object.rotation) && !object.activated) {
-                                                this.padJump(PadType.PINK, object.layer, {x: object.x, y: object.y});
-                                                object.activated = true;
-                                                LevelManager.activatedObjects.push(object);
-                                        }
-                                        break;
-
                                 case ObjectType.JUMP_PAD_RED:
+                                        config = this.PAD_CONFIG[object.type];
 
-                                        if (AD.isColliding(playerRectOuter, objRect, object.rotation) && !object.activated) {
-                                                this.padJump(PadType.RED, object.layer, {x: object.x, y: object.y});
+                                        if (collidingSensorAndDeactivated)
+                                        {
+                                                this.padJump(config.type, object.layer, {x: object.x, y: object.y});
                                                 object.activated = true;
                                                 LevelManager.activatedObjects.push(object);
                                         }
@@ -745,7 +998,8 @@ export class PlayerObject extends GameObject {
 
                                 case ObjectType.GRAVITY_PORTAL_NORMAL:
 
-                                        if (AD.isColliding(playerRectOuter, objRect, object.rotation) && !object.activated) {
+                                        if (collidingSensorAndDeactivated)
+                                        {
                                                 this.flipGravity(false);
                                                 object.activated = true;
                                                 LevelManager.activatedObjects.push(object);
@@ -756,7 +1010,8 @@ export class PlayerObject extends GameObject {
 
                                 case ObjectType.GRAVITY_PORTAL_INVERSE:
 
-                                        if (AD.isColliding(playerRectOuter, objRect, object.rotation) && !object.activated) {
+                                        if (collidingSensorAndDeactivated)
+                                        {
                                                 this.flipGravity(true);
                                                 object.activated = true;
                                                 LevelManager.activatedObjects.push(object);
@@ -767,11 +1022,39 @@ export class PlayerObject extends GameObject {
 
                                 case ObjectType.GRAVITY_PORTAL_TOGGLE:
 
-                                        if (AD.isColliding(playerRectOuter, objRect, object.rotation) && !object.activated) {
+                                        if (collidingSensorAndDeactivated)
+                                        {
                                                 this.flipGravity(!this.isUpsideDown);
                                                 object.activated = true;
                                                 LevelManager.activatedObjects.push(object);
                                         }
+                                        break;
+
+                                case ObjectType.PORTAL_SHIP:
+
+                                        if (collidingSensorAndDeactivated)
+                                        {
+                                                this.playPortalEffect(2, object.x, object.y, {r: 255, g: 0, b: 255}, object.rotation);
+                                                object.activated = true;
+                                                LevelManager.activatedObjects.push(object);
+
+                                                this.switchToShipMode(object.y);
+                                        }
+                                        break;
+
+                                case ObjectType.PORTAL_CUBE:
+
+                                        if (collidingSensorAndDeactivated)
+                                        {
+                                                this.playPortalEffect(2, object.x, object.y, {r: 0, g: 255, b: 0}, object.rotation);
+                                                object.activated = true;
+                                                LevelManager.activatedObjects.push(object);
+
+                                                this.switchToCubeMode();
+                                        }
+                                        break;
+                                
+                                default:
                                         break;
                         }
 
@@ -782,26 +1065,177 @@ export class PlayerObject extends GameObject {
                 this.currentRingOverlaps = prevRingCopy;
 
                 if (solidCollisionResult === CollisionSide.NONE) {
-                        this.isGrounded = false;
+                        this.isOnSurface = false;
                 }
 
                 return solidCollisionResult;
         }
 
-        private onLanded(snapY: number | null = null) {
-                
-                this.isGrounded = true;
+        private onSurfaceContact(snapY: number | null = null): void {
+                this.isOnSurface = true;
                 this.shouldApplyTerminalVel = true;
                 this.setYVelocity(0);
-                this.updateRotationSnap();
-                this.playerStreakActive = false;
-                PlayerStreak.get().setAttached(false);
+                this.curPosition.set(
+                        this.node.position.x + this.xVelocity * this.FIXED_DT,
+                        this.node.position.y
+                )
+
+                switch(this.gamemode) {
+                        case Gamemode.CUBE:
+                                this.updateRotationSnap(this.FIXED_DT * 60);
+
+                                PlayerStreak.instance.setAttached(false);
+                                this.playerStreakActive = false;
+                                
+                                break;
+                        case Gamemode.SHIP:
+                                this.updateRotationSnap(this.FIXED_DT * 60);
+                                break;
+                        default:
+                                break;
+                }
 
                 if (snapY !== null) {
                         this.setPositionY(snapY);
                 }
 
                 this.rotationDir = this.isUpsideDown ? -1 : 1;
+        }
+
+        private changeGamemodeIcon(gamemode: Gamemode): void {
+                if (this.visualRoot.children.length < 1) return;
+
+                // set all to false
+                for (let i = 0; i < this.visualRoot.children.length; i ++) {
+                        const gamemodeRoot = this.visualRoot.children[i];
+                        AD.setVisible(gamemodeRoot as Node, false);
+                }
+
+                // show the desired gamemode
+                switch (gamemode) {
+                        case Gamemode.CUBE:
+                                AD.setVisible(this.cubeRoot, true);
+                                break;
+                        case Gamemode.SHIP:
+                                AD.setVisible(this.shipRoot, true);
+                                AD.setVisible(this.vehicleRoot, true);
+                                break;
+                
+                        default:
+                                break;
+                }
+        }
+
+        private switchToShipMode(portalY: number): void {
+                if (this.gamemode === Gamemode.SHIP) return;
+                this.gamemode = Gamemode.SHIP;
+                
+                this.becameShipThisTick = true;
+
+                this.gravityDir = 1;
+                this.isAccelerating = false;
+                this.changeGamemodeIcon(this.gamemode); // set sprites visibility to match gamemode
+                this.playerRotation = 0;
+                this.yVelocity *= 0.5;
+                
+                const reset = this.playerStreakActive ? false : true;
+                PlayerStreak.instance.setAttached(true, reset);
+                PlayerStreak.instance.offsetY = -7.5;
+                PlayerStreak.instance.offsetX = -5;
+                this.playerStreakActive = true;
+
+                this.shipFireEffect.resetSystem();
+                PlayLayer.instance.activateGlitterEffect();
+
+                // run ceiling anim and fix collision bounds
+                if (!portalY) portalY = 300;
+                this.activateFixedMode(portalY, 300);
+        }
+
+        private switchToCubeMode(instant: boolean = false): void {
+                if (this.gamemode === Gamemode.CUBE) return;
+                this.gamemode = Gamemode.CUBE;
+
+                this.changeGamemodeIcon(this.gamemode);
+                this.gravityDir = 1;
+                this.playerRotation = 0;
+                PlayerStreak.instance.offsetY = 0;
+                PlayerStreak.instance.offsetX = 0;
+
+                this.shipDragEffect.stopSystem();
+                this.shipDragEffectRunning = false;
+
+                this.playerStreakActive = false;
+                PlayerStreak.instance.setAttached(false);
+
+                this.shipFireEffect.stopSystem();
+                PlayLayer.instance.deactivateGlitterEffect();
+
+                // reset dual grounds to single ground
+                this.deactivateFixedMode(instant);
+
+                this.rotationDir = this.isUpsideDown ? -1 : 1;
+        }
+
+        /**
+         * Activate static camera and ease grounds into view for gamemodes such as ship, ball, ufo, spider, wave, or swing.
+         */
+        private activateFixedMode(portalY: number, gameplayHeight: number): void {
+                this.isFixedMode = true;
+                
+                const halfHeight = gameplayHeight * 0.5;
+                let lowerY = Math.floor((portalY - halfHeight) / 30) * 30;
+                lowerY = Math.max(lowerY, 0);
+
+                const upperY = lowerY + gameplayHeight;
+
+                this.worldGroundY = lowerY;
+                this.worldCeilingY = upperY;
+
+                // center camera to the play area
+                const cameraCenterY = (upperY + lowerY) / 2;
+                CameraController.instance.enterStaticY(cameraCenterY, 0.5);
+
+                // ease the two grounds
+                const ceiling = PlayLayer.instance.ceilingLayer;
+                const ground = PlayLayer.instance.groundLayer;
+
+                ceiling.setVisible(true);
+                ground.setVisible(true);
+
+                const winHeight = view.getVisibleSize().height;
+
+                const visibleGroundHeight = (winHeight - gameplayHeight) * 0.5;
+                const targetTop = winHeight - visibleGroundHeight;
+                const targetBottom = visibleGroundHeight;
+
+                const ceilingIsOffScreen = ceiling.getScreenY() >= winHeight;
+                const groundIsOffScreen = ground.getScreenY() <= 0;
+
+                if (ceilingIsOffScreen) {
+                        ceiling.setScreenY(winHeight);
+                }
+                ceiling.easeToScreenY(targetTop, 0.5, false, ceilingIsOffScreen);
+
+                if (groundIsOffScreen) {
+                        ground.setScreenY(0);
+                }
+                ground.easeToScreenY(targetBottom, 0.5, false, groundIsOffScreen);
+        }
+
+        private deactivateFixedMode(instant: boolean = false): void {
+                this.isFixedMode = false;
+                CameraController.instance.exitStatic();
+                CameraController.rawTargetY = CameraController.getPositionY() - CameraController.getHalfHeight();
+
+                const ceiling = PlayLayer.instance.ceilingLayer;
+                const ground = PlayLayer.instance.groundLayer;
+
+                ground.resetFromStaticY(instant);
+                ceiling.resetFromStaticY(instant);
+
+                this.worldGroundY = 0;
+                this.worldCeilingY = null;
         }
 
         public enableGhostTrail(): void {
@@ -812,13 +1246,13 @@ export class PlayerObject extends GameObject {
                 GhostTrailEffect.instance.ghostTrailEnabled = false;
         }
 
-        private playPortalEffect(portalNumber: number, x: number, y: number, circleColor: {r: number, g: number, b: number}, rotation: number = 0): void {
-                const portalCircle = this.createCircleWave(45, 10, 0.3, circleColor, true, 'in');
+        private playPortalEffect(portalShineNumber: number, x: number, y: number, circleColor: {r: number, g: number, b: number}, rotation: number = 0): void {
+                const portalCircle = this.createCircleWave(45, 10, 0.3, circleColor, true, 'both');
                 LayerManager.addToLayer(portalCircle, GameLayer.T1);
                 portalCircle.setPosition(x, y);
 
                 const t1Layer = this.resolveT1Layer();
-                const formattedPortalNum = portalNumber.toString().padStart(2, '0');
+                const formattedPortalNum = portalShineNumber.toString().padStart(2, '0');
 
                 const portalShineFrontFrame = getCachedSpriteFrameFromAtlas("GJ_GameSheet04-uhd", `portalshine_${formattedPortalNum}_front_001/spriteFrame`);
                 const portalShineBackFrame = getCachedSpriteFrameFromAtlas("GJ_GameSheet04-uhd", `portalshine_${formattedPortalNum}_back_001/spriteFrame`);
@@ -848,12 +1282,15 @@ export class PlayerObject extends GameObject {
                 tween(state)
                         .to(0.2, { opacity: 255 }, { onUpdate })
                         .to(0.38, { opacity: 0 }, { onUpdate })
-                        .call(() => portalShineFrontSprite.destroy())
+                        .call(() => {
+                                portalShineFrontSprite.destroy();
+                                portalShineBackSprite.destroy();
+                        })
                         .start();
         }
 
         private playRingEffect(collisionRect: CollisionRect, layer: GameLayer, x: number, y: number, color: {r: number, g: number, b: number}): void {
-                const ringJumpEffect = this.createCircleWave(30, 5.5, 0.5, color, true, 'in');
+                const ringJumpEffect = this.createCircleWave(40, 5.5, 0.5, color, true, 'in');
                 LayerManager.addToLayer(ringJumpEffect, layer);
                 ringJumpEffect.setPosition(x, y);
 
@@ -896,7 +1333,7 @@ export class PlayerObject extends GameObject {
         }
 
         private flipGravity(flip: boolean, noEffects: boolean = false): void {
-                if (this.isUpsideDown == flip) return; // exit early if already upside down or right-side up
+                if (this.isUpsideDown === flip) return; // exit early if already upside down or right-side up
 
                 this.isUpsideDown = flip;
                 this.yVelocity *= 0.5;
@@ -906,8 +1343,33 @@ export class PlayerObject extends GameObject {
                      let reset = false;
                      if (!this.playerStreakActive) reset = true;
 
-                     PlayerStreak.get().setAttached(true, reset);
+                     PlayerStreak.instance.setAttached(true, reset);
                      this.playerStreakActive = true;
+                }
+
+                if (this.gamemode === Gamemode.SHIP) {
+
+
+                        this.shipRoot.setScale(
+                                this.shipRoot.scale.x,
+                                this.shipRoot.scale.y * -1
+                        )
+
+                        this.shipRoot.setPosition(0, -this.shipRoot.position.y);
+
+                        this.vehicleRoot.setScale(
+                                this.vehicleRoot.scale.x,
+                                this.vehicleRoot.scale.y * -1
+                        )
+
+                        this.vehicleRoot.setPosition(0, -this.vehicleRoot.position.y);
+
+                        PlayerStreak.instance.offsetY = -PlayerStreak.instance.offsetY;
+
+                        this.shipFireEffect.node.setPosition(
+                                this.shipFireEffect.node.position.x,
+                                this.shipFireEffect.node.position.y * -1
+                        )
                 }
 
                 this.canDieFromHitHead = false;
@@ -924,7 +1386,8 @@ export class PlayerObject extends GameObject {
 
                 switch(padType) {
                         case PadType.YELLOW:
-                                yVel = 846;
+                                //yVel = 846;
+                                yVel = 870;
                                 break;
                         case PadType.PINK:
                                 yVel = 561.6;
@@ -944,7 +1407,7 @@ export class PlayerObject extends GameObject {
                 let reset = false;
                 if (!this.playerStreakActive) reset = true;
 
-                PlayerStreak.get().setAttached(true, reset);
+                PlayerStreak.instance.setAttached(true, reset);
                 this.playerStreakActive = true;
 
                 if (effectLayer) {
@@ -974,20 +1437,81 @@ export class PlayerObject extends GameObject {
                 let reset = false;
                 if (!this.playerStreakActive) reset = true;
 
-                PlayerStreak.get().setAttached(true, reset);
+                PlayerStreak.instance.setAttached(true, reset);
                 this.playerStreakActive = true;
 
                 this.rotationDir = this.isUpsideDown ? -1 : 1;
         }
 
-        private jump(): void
-        {
-                switch(this.gamemode)
-                {
+        private updateShipPhysics(buttonHeld: boolean | null = null): void {
+                if (this.gamemode != Gamemode.SHIP) return;
+
+                const yv = this.yVelocity;
+
+                // neutral zone detection
+                if (!this.isUpsideDown) {
+                        if ((yv >= 0 && yv < 432) || (yv <= 0 && yv > -345.6))
+                        this.isAccelerating = false;
+                } else {
+                        if ((yv <= 0 && yv > -432) || (yv >= 0 && yv < 345.6))
+                        this.isAccelerating = false;
+                }
+
+                // --- gravDirMult determination --------------------------------
+                let gravDirMult: number;
+                const bigMult = this.isUpsideDown ? 0.8 : 1.2;
+                const smallMult = this.isUpsideDown ? 1.2 : 0.8;
+                const negMult = -1.0;
+
+                const holding = buttonHeld ? buttonHeld : this.jumpHeld;
+
+                if (holding) {
+                        if (!this.isAccelerating) {
+                                gravDirMult = negMult;
+                        }
+                        else {
+                                const movingWrongWay = !this.isUpsideDown
+                                        ? (yv <= 0 && yv !== 0)
+                                        : (yv > 0);
+                                gravDirMult = movingWrongWay ? negMult : smallMult;
+                        }
+                }
+                else {
+                        if (!this.isAccelerating) {
+                                gravDirMult = this.playerIsFalling() ? smallMult : bigMult;
+                        }
+                        else {
+                                const movingWrongWay = !this.isUpsideDown
+                                        ? (yv <= 0 && yv !== 0)
+                                        : (yv > 0);
+                                if (movingWrongWay) {
+                                        gravDirMult = negMult;
+                                }
+                                else {
+                                        gravDirMult = this.playerIsFalling() ? smallMult : bigMult;
+                                }
+                        }
+                }
+
+                const accelFactor = (holding && this.playerIsFalling())
+                        ? 0.5
+                        : 0.4;
+
+                const newGravityDir = gravDirMult < 0 ? -1 : 1;
+                this.gravityDir = newGravityDir;
+
+                this.forceMult = Math.abs(gravDirMult) * accelFactor;
+        }
+
+        private onButtonPressed(): void {
+                switch(this.gamemode) {
                         case Gamemode.CUBE:
-                                if (this.jumpHeld && this.isGrounded)
-                                {
-                                        this.isGrounded = false;
+                                const canJump = 
+                                        (!this.isUpsideDown && this.curCollisionSide === CollisionSide.BOTTOM) ||
+                                        (this.isUpsideDown && this.curCollisionSide === CollisionSide.TOP);
+
+                                if (canJump) {
+                                        this.isOnSurface = false;
                                         this.canRingJump = false;
                                         this.setYVelocity(
                                                 this.isUpsideDown
@@ -999,14 +1523,28 @@ export class PlayerObject extends GameObject {
                                         this.rotationDir = this.isUpsideDown ? -1 : 1;                        
                                 }                                
                                 break;
+                        case Gamemode.SHIP:
+                                this.updateShipPhysics(true);
+                                break;
 
-                        default: break;
+                        default:
+                                break;
+                }
+        }
+
+        private onButtonReleased(): void {
+                switch(this.gamemode) {
+                        case Gamemode.SHIP:
+                                this.updateShipPhysics(false);
+                                break;
+                        default:
+                                break;
                 }
         }
 
         public spawnPlayerRipple(startRadius: number, endRadius: number, duration: number): void {
                 const rippleNode = new Node('ripple');
-                this.particleRoot.addChild(rippleNode);
+                this.particleRootLower.addChild(rippleNode);
 
                 const gfx = rippleNode.addComponent(Graphics);
                 setGraphicsBlending(gfx, true);
@@ -1077,21 +1615,27 @@ export class PlayerObject extends GameObject {
                 this.flipGravity(false, true);
                 this.setDead(false);
                 this.deltaPos.set(0, 0);
+                this.gravityDir = 1;
 
-                PlayerStreak.get().setAttached(false);
-                PlayerStreak.get().getComponent(MotionStreak).reset();
+                PlayerStreak.instance.setAttached(false);
+                PlayerStreak.instance.getComponent(MotionStreak).reset();
                 this.disableGhostTrail();
                 this.rotationDir = 1;
 
                 const cameraY = CameraController.getHalfHeight() - settings.defaultCameraOffsetY;
+                const staticEaseTween = CameraController.instance.staticEaseTween;
+                if (staticEaseTween != null) staticEaseTween.stop();
                 CameraController.setPosition(CameraController.LOOK_AHEAD, cameraY);
                 CameraController.rawTargetY = cameraY;
                 CameraController.logicalY = cameraY;
+                CameraController.instance.exitStatic();
+                this.switchToCubeMode(true);
                 
                 this.setPosition(0, this.hitboxOuter.height * 0.5);
-                this.setVisualRotation(0);
+                this.lastPosition.set(this.node.position.x, this.node.position.y);
+                this.playerRotation = 0;
 
-                this.isGrounded = true;
+                this.isOnSurface = true;
                 this.attemptCount++;
 
                 this.setYVelocity(0);
@@ -1111,7 +1655,9 @@ export class PlayerObject extends GameObject {
                         }
                 }
 
-                PlayLayer.get().playMusic();
+                PlayLayer.instance.playMusic();
+                this.updateTimeMod();
+                this.playerRotation = 0;
         }
 
         private setDead(dead: boolean) {
@@ -1124,7 +1670,7 @@ export class PlayerObject extends GameObject {
                 duration: number,
                 color: { r: number; g: number; b: number } = { r: 255, g: 255, b: 255 },
                 fill: boolean = true,
-                fade: 'in' | 'out' | 'none' = 'out'
+                fade: 'in' | 'out' | 'none' | 'both' = 'out'
         ): Node {
                 const fxNode = new Node('circle-wave');
                 fxNode.setPosition(0, 0);
@@ -1132,10 +1678,7 @@ export class PlayerObject extends GameObject {
                 const gfx = fxNode.addComponent(Graphics);
                 setGraphicsBlending(gfx, true);
 
-                const initialOpacity = fade === 'in' ? 0 : 255;
-                const targetOpacity  = fade === 'in' ? 255 : fade === 'out' ? 0 : 255;
-
-                const state = { radius: startRadius, opacity: initialOpacity };
+                const state = { radius: startRadius, opacity: fade === 'in' || fade === 'both' ? 0 : 255 };
 
                 const onUpdate = () => {
                         const { r, g, b } = color;
@@ -1153,12 +1696,32 @@ export class PlayerObject extends GameObject {
                         else gfx.stroke();
                 };
 
-                const activeTween = tween(state)
-                        .to(duration, { radius: endRadius, opacity: targetOpacity }, { onUpdate })
-                        .call(() => {
-                                if (fxNode.isValid) fxNode.destroy();
-                        })
-                        .start();
+                let activeTween: any;
+                
+                if (fade === 'both') {
+                        // For 'both', fade in then fade out
+                        const halfDuration = duration / 2;
+                        activeTween = tween(state)
+                                .to(halfDuration, { radius: startRadius + (endRadius - startRadius) / 2, opacity: 255 }, { onUpdate })
+                                .to(halfDuration, { radius: endRadius, opacity: 0 }, { onUpdate })
+                                .call(() => {
+                                        if (fxNode.isValid) fxNode.destroy();
+                                })
+                                .start();
+                } else {
+                        const targetOpacity = fade === 'in'
+                                ? 255
+                                : fade === 'out'
+                                        ? 0
+                                        : 255; // fade === 'none'
+
+                        activeTween = tween(state)
+                                .to(duration, { radius: endRadius, opacity: targetOpacity }, { onUpdate })
+                                .call(() => {
+                                        if (fxNode.isValid) fxNode.destroy();
+                                })
+                                .start();
+                }
 
                 fxNode.on(Node.EventType.NODE_DESTROYED, () => activeTween.stop(), this);
 
@@ -1167,7 +1730,7 @@ export class PlayerObject extends GameObject {
 
         private spawnDeathCircle() {
                 const deathCircleNode = new Node('death-circle');
-                this.deathEffectRoot.addChild(deathCircleNode);
+                this.particleRootUpper.addChild(deathCircleNode);
 
                 const gfx = deathCircleNode.addComponent(Graphics);
                 setGraphicsBlending(gfx, true);
@@ -1199,23 +1762,24 @@ export class PlayerObject extends GameObject {
                         getCachedPlist("explodeEffect"),
                         this.node.position.x,
                         this.node.position.y,
-                        this.deathEffectRoot
+                        this.particleRootUpper
                 )
                 tween(this.visualRoot.getComponent(UIOpacity))
                         .to(0.05, { opacity: 0 })
                         .start();
                 
-                CameraController.get().shakeCamera(0.15, 2, 0);
+                CameraController.instance.shakeCamera(0.15, 2, 0);
         }
 
         protected destroyPlayer(): void {
                 if (this.isDead) return;
 
                 this.setDead(true);
-                PlayLayer.get().stopMusic();
-                PlayLayer.get().playDeathSound();
+                PlayLayer.instance.stopMusic();
+                PlayLayer.instance.playDeathSound();
                 this.disableGhostTrail();
                 this.playDeathEffect();
+                this.shipFireEffect.stopSystem();
 
                 this.scheduleOnce(() => {
                         this.respawnPlayer();
@@ -1288,48 +1852,63 @@ export class PlayerObject extends GameObject {
                 }
         }
 
-        private updateCollisionStatus(dt: number) {
-                const collisionSide = this.getActiveCollision();
+        private updatePlayerPhysics(dt: number): CollisionSide {
                 if (this.isDead) return;
 
-                // collision states
-                const hitGround = collisionSide == CollisionSide.BOTTOM;
-                const hitHead = collisionSide == CollisionSide.TOP;
-                const hitWall = collisionSide == CollisionSide.LEFT || collisionSide == CollisionSide.RIGHT;
+                 // force multipliers
+                switch(this.gamemode) {
+                        case Gamemode.CUBE: this.forceMult = 1; break;
+                        case Gamemode.SHIP: this.updateShipPhysics(); break;
+                        case Gamemode.BIRD: this.forceMult = 0.58; break;
+                        case Gamemode.SWING: this.forceMult = 0.4; break;
+                        case Gamemode.BALL: this.forceMult = 0.6; break;
+                        case Gamemode.SPIDER: this.forceMult = 0.6; break;
+                        case Gamemode.ROBOT: this.forceMult = 0.9; break;
+                        default: break; 
+                }
 
-                // no collision occured this tick
-                const noCollision = !hitGround && !hitHead && !hitWall;
+                const collisionSide = this.checkCollisions();
+                this.curCollisionSide = collisionSide;
+                const airborne = collisionSide === CollisionSide.NONE; // no collision occured this tick
 
-                // compute Y velocity for the next tick
-                const nextYVelocity = (noCollision && !this.isGrounded)
-                        ? this.yVelocity - this.gravity * dt
-                        : this.yVelocity;
-                const groundHalfH = this.hitboxOuter.height * 0.5;
+                const flipDir = this.isUpsideDown ? -1 : 1;
+
+                const nextYVelocity = this.yVelocity - (this.gravity * flipDir * this.gravityDir * this.forceMult * dt);
+
+                const nextX = this.node.position.x + this.xVelocity * dt;
                 const nextY = this.node.position.y + nextYVelocity * dt;
-                const isOnRealGround = nextY <= groundHalfH;
+
+                this.setYVelocity(nextYVelocity);
                 
-                if (!collisionSide && isOnRealGround) { // is on the real ground
-                        if (this.isUpsideDown) {
-                                if (this.canDieFromHitHead) this.destroyPlayer();
-                                this.onLanded(groundHalfH);
-                                return;
+                this.curPosition.set(nextX, nextY);
+
+                // run gamemode-specific actions when in the air
+                if (airborne) {
+                        switch(this.gamemode) {
+                                case Gamemode.CUBE:
+                                        this.updateRotationAirborne(dt);
+                                        break;
+                                case Gamemode.SHIP:
+                                case Gamemode.BIRD:
+                                case Gamemode.DART:
+                                case Gamemode.SWING:
+                                        this.updateFlyRotation(this.FIXED_DT * 60);
+                                        break;
+                                default:
+                                        break;
                         }
-                        this.onLanded(groundHalfH);
                 }
-                else if (noCollision && !isOnRealGround && !this.isGrounded) { // airborne
-                        this.setYVelocity(nextYVelocity);
-                        this.updateRotationAirborne(dt);
-                }
-                else this.updateRotationSnap();
+
+                return collisionSide;
         }
 
-        private updateDragEffect(): void {
-                if (this.isDead) {
+        private updateCubeDragEffect(): void {
+                if (this.isDead || this.gamemode != Gamemode.CUBE) {
                         this.dragEffect.stopSystem();
                         this.dragEffectRunning = false;
                         return;
                 }
-                if (this.isGrounded) {
+                if (this.isOnSurface) {
                         if (!this.dragEffectRunning) {
                                 // run once when drag effect started
                                 this.isUpsideDown
@@ -1350,15 +1929,46 @@ export class PlayerObject extends GameObject {
                 }
         }
 
+        private updateShipDragEffect(): void {
+                if (this.isDead || this.gamemode != Gamemode.SHIP) {
+                        this.shipDragEffect.stopSystem();
+                        this.shipDragEffectRunning = false;
+                        return;
+                }
+                if (this.isOnSurface) {
+                        if (!this.shipDragEffectRunning) {
+                                // run once when drag effect started
+                                this.isUpsideDown
+                                        ? this.shipDragEffect.node.setPosition(1, 15)
+                                        : this.shipDragEffect.node.setPosition(1, -15);
+                                this.shipDragEffect.resetSystem();
+                                this.shipDragEffectRunning = true;
+                                
+                                const gravityY = this.isUpsideDown ? 300 : -300;
+                                const rotation = this.isUpsideDown ? 180 : 0;
+
+                                this.shipDragEffect.node.angle = -rotation;
+                                this.shipDragEffect.gravity.y = gravityY;
+                        }
+                } else {
+                        this.shipDragEffect.stopSystem();
+                        this.shipDragEffectRunning = false;
+                }
+        }
+
         private updateLandEffect(): void {
+                const noLandEffect = this.isFlyingMode();
+                if (noLandEffect) return;
+
                 const halfH = this.hitboxOuter.height * 0.5;
                 const yOffset = this.isUpsideDown ? halfH : -halfH;
                 if (this.hasLanded) {
+                        this.hasLanded = false;
                         const landEffect = this.spawnParticleEffect(
                                 getCachedPlist("landEffect"),
                                 this.node.position.x,
                                 this.node.position.y + yOffset,
-                                this.particleRoot
+                                this.particleRootLower
                         )
 
                         const gravityY = this.isUpsideDown ? 500 : -500;
@@ -1378,6 +1988,24 @@ export class PlayerObject extends GameObject {
                 }
         }
 
+        private updatePlayerDragEffect(collisionSide: CollisionSide): void {
+                if (
+                        (collisionSide === CollisionSide.BOTTOM && this.isUpsideDown) ||
+                        (collisionSide === CollisionSide.TOP && !this.isUpsideDown)
+                ) return;
+
+                switch(this.gamemode) {
+                        case Gamemode.CUBE: this.updateCubeDragEffect(); break;
+                        case Gamemode.SHIP: this.updateShipDragEffect(); break;
+                        default: break;
+                }
+        }
+
+        private resetVariables(): void {
+                this.becameShipThisTick = false;
+                this.hasLanded = false;
+        }
+
         private fixedUpdate(dt: number): void { // run fixed timestep physics
                 if (
                         !LevelManager.levelLoadingFinished ||
@@ -1385,28 +2013,32 @@ export class PlayerObject extends GameObject {
                         !this.canStartPlaying
                 ) return;
 
-                this.updateTimeMod();
+                this.resetVariables();
+
+                const wasOnSurface = this.isOnSurface;
+
+                const collisionResult = this.updatePlayerPhysics(dt);
+
+                this.hasLanded = !wasOnSurface && this.isOnSurface; // true only a single frame
+
                 this.handleInput();
 
-                const wasGrounded = this.isGrounded;
-
-                this.updateCollisionStatus(dt); // contents might be moved back to fixedUpdate in the future (maybe)
-
-                this.hasLanded = !wasGrounded && this.isGrounded; // true only a single frame
-
                 // clamp terminal velocity
-                if (this.yVelocity < 0) this.shouldApplyTerminalVel = true;
+                if (this.playerIsFalling()) this.shouldApplyTerminalVel = true;
                 this.clampTerminalVelocity();
                 
-                this.updateDragEffect();
-
+                this.updatePlayerDragEffect(collisionResult);
+                this.updateLandEffect();
+                
                 AD.moveBy(
                         this.node,
                         this.xVelocity * dt,
                         this.yVelocity * dt
                 );
 
-                this.updateLandEffect();
+                
+                this.lastPosition.x = this.node.position.x;
+                this.lastPosition.y = this.node.position.y;
         }
 
         protected update(dt: number): void {
@@ -1414,9 +2046,8 @@ export class PlayerObject extends GameObject {
                     return;
                 }
 
-                if (this.isRespawning) this.isRespawning = false;
-
                 // fixed timestep update
+                this.fixedUpdateScale = this.TPS * dt;
                 let steps = 0;
                 this.accumulator += dt;
                 while (this.accumulator >= this.FIXED_DT && steps < this.MAX_PHYSICS_STEPS) {
@@ -1430,8 +2061,8 @@ export class PlayerObject extends GameObject {
 
                 // compute delta x and y
                 const deltaPos = this.deltaPos;
-                this.deltaPos.x = this.node.position.x - this.lastX;
-                this.deltaPos.y = this.node.position.y - this.lastY;
+                deltaPos.x = this.node.position.x - this.lastX;
+                deltaPos.y = this.node.position.y - this.lastY;
                 this.lastX = this.node.position.x;
                 this.lastY = this.node.position.y;
 
@@ -1444,6 +2075,12 @@ export class PlayerObject extends GameObject {
                         CameraController.isFollowingPlayer = true;
                 }
                 else CameraController.isFollowingPlayer = false;
+
+                // update player's rotation
+                if (this.isRespawning) this.playerRotation = 0;
+                this.setVisualRotation(this.playerRotation);
+
+                this.isRespawning = false;
         }
 
         protected onDestroy(): void {

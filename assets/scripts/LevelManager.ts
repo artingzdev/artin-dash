@@ -24,7 +24,7 @@ export class LevelManager extends Component {
         private static activeBucketsArray: number[] = [];
         public static levelSections: CollisionRect[][] = [];
         public static levelBuckets: GameObject[][] = [];
-        public static sectionWidth: number = 200;
+        public static sectionWidth: number = 150;
 
         public static levelDefaultSettings: levelDefaultSettings = {
                 defaultChannelColors: []
@@ -158,7 +158,7 @@ export class LevelManager extends Component {
                         gameObj.baseColliderSize.width = colliderWidth;
                         gameObj.baseColliderSize.height = colliderHeight;
 
-                        const extraGameObj = this.tryCreateExtraGameObject(objectID, zLayer, x, y, rotation);
+                        const extraGameObj = this.tryCreateExtraGameObject(objectID, zLayer, x, y, rotation, flipH, flipV);
 
                         const sectionIndex = Math.max(0, Math.floor(x / this.sectionWidth));
                         (this.levelSections[sectionIndex] ??= []).push(collider); // build hitbox buckets
@@ -167,8 +167,8 @@ export class LevelManager extends Component {
 
                         if (x > currentLength) currentLength = x; // update to get the final level length at the end
                 };
-                if (currentLength > 0) PlayLayer.get().levelLength = currentLength;
-                else PlayLayer.get().levelLength = null;
+                if (currentLength > 0) PlayLayer.instance.levelLength = currentLength;
+                else PlayLayer.instance.levelLength = null;
 
                 // -------- level color channels loading ----------------------------
                 const levelColors = header.color;
@@ -193,20 +193,24 @@ export class LevelManager extends Component {
                 }
 
                 this.levelLoadingFinished = true;
-                void PlayLayer.get().prepareLevelMusic().then(() => {
-                        PlayLayer.get().startPlaying();
+                void PlayLayer.instance.prepareLevelMusic().then(() => {
+                        PlayLayer.instance.startPlaying();
                 });
         }
 
         /**
          * Helper for unlisted parts of game objects such as the ball on pulsing rods.
-         * @param objectID The object ID of the base GameObject.
-         * @param zLayer The Z layer of the base GameObject.
-         * @param objX The X position of the base GameObject.
-         * @param objY The Y position of the base GameObject.
-         * @param rotation The rotation of the base GameObject.
          */
-        private static tryCreateExtraGameObject(objectID: number, zLayer: number, objX: number, objY: number, rotation: number = 0): GameObject | null {
+        private static tryCreateExtraGameObject(
+                objectID: number,
+                zLayer: number,
+                objX: number,
+                objY: number,
+                rotation: number = 0,
+                flipX: boolean = false,
+                flipY: boolean = false
+        ): GameObject | null
+        {
                 if (!zLayer || !objectID) return null;
 
                 let rodBallDist: number | null = null;
@@ -231,10 +235,14 @@ export class LevelManager extends Component {
                         rodBallObj.setScale(0.5); // default stationary scale
                         rodBallObj.setVisible(false);
 
-                        const x = objX + (-sinDeg(rotation) * rodBallDist);
-                        const y = objY + (cosDeg(rotation) * rodBallDist);
+                        let correctedRot = -rotation;
+                        if (flipY) correctedRot += 180;
+
+                        const x = objX + (-sinDeg(correctedRot) * rodBallDist);
+                        const y = objY + (cosDeg(correctedRot) * rodBallDist);
 
                         rodBallObj.setPosition(x, y);
+                        rodBallObj.setRotation(rotation);
                         return rodBallObj;
                 }
 

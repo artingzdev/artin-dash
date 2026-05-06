@@ -32,3 +32,5 @@ settings
 build-templates
 *.scene
 *.meta
+scripts
+*.gmd

@@ -23,7 +23,10 @@ export enum ObjectType {
 
         GRAVITY_PORTAL_NORMAL = 4,
         GRAVITY_PORTAL_INVERSE = 3,
-        GRAVITY_PORTAL_TOGGLE = 42
+        GRAVITY_PORTAL_TOGGLE = 42,
+
+        PORTAL_SHIP = 5,
+        PORTAL_CUBE = 6
 }
 
 // this is the base class for all objects in a level, including the player
@@ -79,7 +82,9 @@ export class GameObject extends Component {
                 [ObjectType.JUMP_RING_PINK, ["ringEffect", new Color(255, 0, 255, 255)]],
                 [ObjectType.JUMP_RING_RED, ["ringEffect", new Color(255, 0, 0, 255)]],
                 [ObjectType.GRAVITY_PORTAL_NORMAL, ["portalEffect01", null]],
-                [ObjectType.GRAVITY_PORTAL_INVERSE, ["portalEffect02", null]]
+                [ObjectType.GRAVITY_PORTAL_INVERSE, ["portalEffect02", null]],
+                [ObjectType.PORTAL_SHIP, ["portalEffect04", null]],
+                [ObjectType.PORTAL_CUBE, ["portalEffect03", null]]
         ]);
 
         setup(objectID: number): void {

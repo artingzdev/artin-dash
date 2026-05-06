@@ -1,4 +1,4 @@
-import { _decorator, Node, Sprite, UITransform, Color, Size, Vec2, SpriteFrame, view, clamp, Vec4, BoxCollider2D, RigidBody2D, ERigidBody2DType } from 'cc';
+import { _decorator, Node, Sprite, UITransform, Color, Size, Vec2, SpriteFrame, view, clamp, Vec4, BoxCollider2D, RigidBody2D, ERigidBody2DType, tween } from 'cc';
 import { fixSpriteScale, getCachedSpriteFrame, pixelsToUnits, setSpriteBlending, settings } from './utils';
 import { CameraController } from './CameraController';
 import { GameLayer } from './LayerManager';
@@ -37,10 +37,32 @@ export class ADGroundLayer extends ADBaseLayer {
     private unbindGround02: (() => void) | null = null;
     private unbindLine: (() => void) | null = null;
 
+    private isStaticY: boolean = false;
+    private screenY: number = 0;
+
+    private static _instance: ADGroundLayer = null!;
+
+    public static get instance(): ADGroundLayer {
+        return ADGroundLayer._instance;
+    }
+
+    protected onLoad(): void {
+        if (this.isCeiling) this.screenY = view.getVisibleSize().height;
+        ADGroundLayer._instance = this;
+    }
+
     setup(groundID: number, isCeiling: boolean, lineType: number): void {
         this.groundID = groundID;
         this.isCeiling = isCeiling;
         this.lineType = lineType;
+    }
+
+    getScreenY(): number {
+        return this.screenY;
+    }
+
+    setScreenY(screenY: number): void {
+        this.screenY = screenY;
     }
 
     protected initInternal(): void {
@@ -136,6 +158,89 @@ export class ADGroundLayer extends ADBaseLayer {
         }
     }
 
+    public resetFromStaticY(instant: boolean = false): void {
+        if (!this.isStaticY) return;
+        
+
+        const startScreenY = this.screenY;
+        const winHeight = view.getVisibleSize().height;
+        const targetScreenY = this.isCeiling
+            ? winHeight // ceiling
+            : 0; // ground
+            
+        if (startScreenY == targetScreenY)
+        {
+            return;
+        }
+
+        if (instant) {
+            this.screenY = targetScreenY;
+            if (this.isCeiling)
+            {
+                this.setVisible(false);
+            }
+            return;
+        }
+
+        const resetStaticY = () => {
+            this.isStaticY = false;
+        }
+
+        const state = { sY: startScreenY };
+        tween(state)
+            .to(0.5, { sY: targetScreenY }, {
+                easing: 'quadInOut',
+                onUpdate: () => {
+                    this.screenY = state.sY;
+                }
+            })
+            .call(() => {
+                if (this.isCeiling) this.setVisible(false);
+                resetStaticY();
+            })
+            .start();
+    }
+
+    public easeToScreenY(targetScreenY: number, durationSeconds: number, instant: boolean = false, startsOffScreen: boolean): void {
+        this.isStaticY = true;
+
+        targetScreenY = Math.max(targetScreenY, 0);
+        const startScreenY = this.screenY;
+        if (startScreenY == targetScreenY) {
+            return;
+        }
+
+        if (instant || durationSeconds <= 0) {
+            this.node.setPosition(this.node.position.x, targetScreenY);
+            return;
+        }
+
+        const onUpdate = () => {
+            this.screenY = state.sY;
+            if (this.isCeiling) {
+                this.screenY = state.sY;
+                return;
+            }
+
+            const reachedCurrentProgress = this.screenY >= state.sY;
+
+            if (startsOffScreen) {
+                this.screenY = state.sY;
+            }
+            else if (reachedCurrentProgress) {
+                this.screenY = state.sY;
+            }
+        }
+
+        const state = { sY: startScreenY };
+        tween(state)
+            .to(durationSeconds, {sY: targetScreenY} ,{
+                easing: 'quadInOut',
+                onUpdate: onUpdate
+            })
+            .start();
+    }
+
     public swapGround(ground: number) {
         if (
                 this.ground01Node == null ||
@@ -226,7 +331,7 @@ export class ADGroundLayer extends ADBaseLayer {
         )
     }
 
-    // infinite scroll logic
+    // infinite scroll logic and screen position calculation
     protected updateGroundPosition(): void {
         const groundWidth = this.groundWidthUnits;
         if (!groundWidth) return;
@@ -252,7 +357,12 @@ export class ADGroundLayer extends ADBaseLayer {
             posX -= steps * tileWidthUnits;
         }
 
-        this.setPosition(posX, this.node.position.y);
+        const camBottom = CameraController.getCameraBottom();
+        const displacement = CameraController.getPositionY() + settings.defaultCameraOffsetY - CameraController.getHalfHeight();
+        if (!this.isCeiling && !this.isStaticY) this.screenY -= displacement;
+        const worldY = Math.max(0, camBottom + this.screenY); // convert screen space Y to world position
+
+        this.setPosition(posX, worldY);
     }
 
     protected lateUpdate(dt: number): void {

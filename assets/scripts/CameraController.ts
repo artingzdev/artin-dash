@@ -1,4 +1,4 @@
-import { _decorator, Component, find, Node, view } from 'cc';
+import { _decorator, Camera, Component, find, Node, Tween, tween, view } from 'cc';
 import { settings } from './utils';
 import { PlayLayer } from './PlayLayer';
 const { ccclass, property } = _decorator;
@@ -6,7 +6,7 @@ const { ccclass, property } = _decorator;
 @ccclass('CameraController')
 export class CameraController extends Component {
 
-    private static instance: CameraController;
+    private static _instance: CameraController;
 
     public static readonly LOOK_AHEAD: number = 75;
     public static readonly DZ_TOP: number = 70; // cube/robot top dead zone
@@ -26,13 +26,20 @@ export class CameraController extends Component {
     private static shakeOffsetY: number = 0;
 
     public static logicalY: number = 0
+    
+    private lastCameraY: number = 0;
+    public deltaY: number = 0;
+
+    public isStatic: boolean = false;
+    public staticEaseTween: Tween = null;
 
     onLoad() {
         CameraController.cameraNode = this.node;
-        CameraController.instance = this;
+        CameraController._instance = this;
 
         const defaultY = view.getVisibleSize().height * 0.5 - settings.defaultCameraOffsetY;
         CameraController.logicalY = defaultY;
+        this.lastCameraY = this.node.position.y;
     }
 
     private static resolveCamera(): Node | null {
@@ -53,8 +60,8 @@ export class CameraController extends Component {
         )
     }
 
-    static get(): CameraController {
-        return CameraController.instance;
+    static get instance(): CameraController {
+        return CameraController._instance;
     }
 
     static getPositionX(): number {
@@ -115,6 +122,18 @@ export class CameraController extends Component {
         camera.setPosition(x, y);
     }
 
+    static setPositionX(x: number): void {
+        const camera = this.resolveCamera();
+        if (!camera) return;
+        camera.setPosition(x, this.getPositionY());
+    }
+
+    static setPositionY(y: number): void {
+        const camera = this.resolveCamera();
+        if (!camera) return;
+        camera.setPosition(this.getPositionX(), y);
+    }
+
     static moveBy(x: number, y: number): void {
         const camera = this.resolveCamera();
         if (!camera) return;
@@ -155,37 +174,74 @@ export class CameraController extends Component {
         CameraController.shakeOffsetY  = 0;
     }
 
-    protected lateUpdate(dt: number): void {
-        if (PlayLayer.player1.isRespawning) return;
-        const frameDt = dt * 60;
+    public enterStaticY(y: number, durationSeconds: number, instant: boolean = false): void {
+        this.isStatic = true;
+        const startY = CameraController.getPositionY();
 
-        const visibleSize = view.getVisibleSize();
-        const halfHeight = visibleSize.height * 0.5;
-        const p1Y = PlayLayer.player1.getPositionY();
-        //const player1IsUpsideDown = PlayLayer.player1.isUpsideDown;
-        const p1IsFixedMode = PlayLayer.player1.isFixedMode;
-
-        const screenCenterY = CameraController.logicalY;
-        // const dzTopEdge     = screenCenterY + (player1IsUpsideDown ? CameraController.DZ_BOTTOM : CameraController.DZ_TOP);
-        // const dzBottomEdge  = screenCenterY - (player1IsUpsideDown ? CameraController.DZ_TOP    : CameraController.DZ_BOTTOM);
-        const dzTopEdge     = screenCenterY + CameraController.DZ_TOP;
-        const dzBottomEdge  = screenCenterY - CameraController.DZ_BOTTOM;
-
-        if (p1IsFixedMode) {
-            CameraController.rawTargetY = p1Y - halfHeight;
-        } else {
-            if (p1Y > dzTopEdge) {
-                CameraController.rawTargetY = p1Y - halfHeight - CameraController.DZ_TOP;
-            } else if (p1Y < dzBottomEdge) {
-                CameraController.rawTargetY = p1Y - halfHeight + CameraController.DZ_BOTTOM;
-            }
+        if (instant || durationSeconds <= 0)
+        {
+            CameraController.setPositionY(y);
+            CameraController.logicalY = y;
+            return;
         }
 
-        const minY = -settings.defaultCameraOffsetY;
-        const clampedTargetY = Math.max(CameraController.rawTargetY, minY);
+        let state = { yPos: startY };
 
-        const lerpFactor = Math.min(1, frameDt / CameraController.SMOOTH_Y);
-        const moveAmountY = (clampedTargetY - (CameraController.logicalY - halfHeight)) * lerpFactor;
+        this.staticEaseTween = tween(state)
+            .to(durationSeconds, { yPos: y },{
+                easing: 'quadInOut',
+                onUpdate: () => {
+                    CameraController.setPositionY(state.yPos);
+                    CameraController.logicalY = CameraController.getPositionY();
+                }
+                
+            })
+            .start()
+    }
+
+    public exitStatic(): void {
+        const currentY = CameraController.getPositionY();
+        CameraController.logicalY = currentY;
+        CameraController.rawTargetY = currentY - CameraController.getHalfHeight();
+        this.isStatic = false;
+    }
+
+    protected lateUpdate(dt: number): void {
+        if (PlayLayer.player1.isRespawning) return;
+
+        const frameDt = dt * 60;
+        let moveAmountY = 0;
+
+        if (!this.isStatic)
+        {
+            const visibleSize = view.getVisibleSize();
+            const halfHeight = visibleSize.height * 0.5;
+            const p1Y = PlayLayer.player1.getPositionY();
+            //const player1IsUpsideDown = PlayLayer.player1.isUpsideDown;
+            const p1IsFixedMode = PlayLayer.player1.isFixedMode;
+
+            const screenCenterY = CameraController.logicalY;
+            // const dzTopEdge     = screenCenterY + (player1IsUpsideDown ? CameraController.DZ_BOTTOM : CameraController.DZ_TOP);
+            // const dzBottomEdge  = screenCenterY - (player1IsUpsideDown ? CameraController.DZ_TOP    : CameraController.DZ_BOTTOM);
+            const dzTopEdge     = screenCenterY + CameraController.DZ_TOP;
+            const dzBottomEdge  = screenCenterY - CameraController.DZ_BOTTOM;
+
+            if (p1IsFixedMode) {
+                CameraController.rawTargetY = p1Y - halfHeight;
+            } else {
+                if (p1Y > dzTopEdge) {
+                    CameraController.rawTargetY = p1Y - halfHeight - CameraController.DZ_TOP;
+                } else if (p1Y < dzBottomEdge) {
+                    CameraController.rawTargetY = p1Y - halfHeight + CameraController.DZ_BOTTOM;
+                }
+            }
+
+            const minY = -settings.defaultCameraOffsetY;
+            const clampedTargetY = Math.max(CameraController.rawTargetY, minY);
+
+            const lerpFactor = Math.min(1, frameDt / CameraController.SMOOTH_Y);
+            moveAmountY = (clampedTargetY - (CameraController.logicalY - halfHeight)) * lerpFactor;            
+        }
 
         const newX = CameraController.isFollowingPlayer
             ? PlayLayer.player1.getPositionX() + CameraController.LOOK_AHEAD
@@ -212,5 +268,10 @@ export class CameraController extends Component {
         }
 
         CameraController.setPosition(finalX, finalY);
+
+        // compute delta position
+        const currentY = this.node.position.y;
+        this.deltaY = currentY - this.lastCameraY;
+        this.lastCameraY = currentY;
     }
 }

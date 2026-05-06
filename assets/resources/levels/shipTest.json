@@ -1,0 +1,2346 @@
+{
+    "header": {
+        "color": [
+            {
+                "1": "40",
+                "2": "125",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1000",
+                "7": "1.000000",
+                "15": "1.000000",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "0",
+                "2": "102",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1001",
+                "7": "1.000000",
+                "15": "1.000000",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "0",
+                "2": "102",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1009",
+                "7": "1.000000",
+                "15": "1.000000",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "255",
+                "2": "255",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1002",
+                "5": "1",
+                "7": "1.000000",
+                "15": "1.000000",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "40",
+                "2": "125",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1013",
+                "7": "1.000000",
+                "15": "1.000000",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "40",
+                "2": "125",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1014",
+                "7": "1.000000",
+                "15": "1.000000",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "255",
+                "2": "58",
+                "3": "58",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1005",
+                "5": "1",
+                "7": "1.000000",
+                "15": "1.000000",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "255",
+                "2": "255",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1006",
+                "5": "1",
+                "7": "1.000000",
+                "15": "1.000000",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "255",
+                "2": "255",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1004",
+                "7": "1.000000",
+                "15": "1.000000",
+                "18": "0",
+                "8": "1"
+            },
+            {
+                "1": "255",
+                "2": "255",
+                "3": "255",
+                "11": "255",
+                "12": "255",
+                "13": "255",
+                "4": "-1",
+                "6": "1010",
+                "7": "1.000000",
+                "15": "1.000000",
+                "18": "0",
+                "8": "1"
+            }
+        ],
+        "songOffset": 0.0,
+        "fadeIn": false,
+        "fadeOut": false,
+        "guidelines": "|e30=~0.1~",
+        "backgroundTextureId": 0,
+        "groundTextureId": 0,
+        "middlegroundTextureId": 0,
+        "groundLine": 0,
+        "font": 0,
+        "colorPage": 0,
+        "gamemode": 0,
+        "miniMode": false,
+        "dualMode": false,
+        "speed": 0,
+        "levelStartPosObject": false,
+        "twoPlayerMode": false,
+        "platformerMode": false,
+        "kA23": "0",
+        "kA24": "0",
+        "allowMultiRotation": false,
+        "enable22Changes": false,
+        "kA48": "1",
+        "allowStaticRotate": false,
+        "reverseSync": true,
+        "mirrorMode": false,
+        "rotateGameplay": false,
+        "enablePlayerSqueeze": false,
+        "fixGravityBug": false,
+        "spawnGroup": 0,
+        "noTimePenalty": false,
+        "kA44": "0",
+        "decreaseBoostSlide": true,
+        "kA46": "0",
+        "kA47": "0",
+        "fixNegativeScale": false,
+        "fixRobotJump": false,
+        "kA35": "0",
+        "dynamicLevelHeight": false,
+        "sortGroups": false,
+        "fixRadiusCollision": false,
+        "kA19": "0",
+        "kA26": "0",
+        "reverseGameplay": false,
+        "kA21": "0",
+        "flipGravity": false
+    },
+    "objects": [
+        {
+            "objectId": 13,
+            "x": 255.0,
+            "y": 75.0,
+            "155": "1",
+            "rotation": 270.0,
+            "specialObjectChecked": true,
+            "interactible": true
+        },
+        {
+            "objectId": 1,
+            "x": 795.0,
+            "y": 75.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 795.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 795.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 825.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 855.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 885.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 915.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 945.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 975.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1005.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1035.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1035.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1035.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 825.0,
+            "y": 45.0,
+            "155": "2"
+        },
+        {
+            "objectId": 5,
+            "x": 825.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 855.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 885.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 915.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 945.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 975.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1005.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1005.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 975.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 945.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 915.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 885.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 855.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 795.0,
+            "y": 225.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 1035.0,
+            "y": 284.999969,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1035.0,
+            "y": 254.999969,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 825.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 855.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 885.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 915.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 945.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 975.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1005.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1035.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 795.0,
+            "y": 284.999969,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 795.0,
+            "y": 254.999969,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1005.0,
+            "y": 255.0,
+            "155": "2",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 5,
+            "x": 1005.0,
+            "y": 284.999939,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 975.0,
+            "y": 255.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 945.0,
+            "y": 255.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 915.0,
+            "y": 255.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 885.0,
+            "y": 255.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 855.0,
+            "y": 255.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 825.0,
+            "y": 255.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 825.0,
+            "y": 284.999939,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 855.0,
+            "y": 284.999939,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 885.0,
+            "y": 284.999939,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 915.0,
+            "y": 284.999939,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 945.0,
+            "y": 284.999939,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 975.0,
+            "y": 284.999939,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1245.0,
+            "y": 135.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 1275.0,
+            "y": 135.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1305.0,
+            "y": 135.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1305.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1305.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1305.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1305.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1245.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1245.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1245.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1245.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1245.0,
+            "y": 255.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 1275.0,
+            "y": 255.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1305.0,
+            "y": 255.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1305.0,
+            "y": 285.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1305.0,
+            "y": 315.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1305.0,
+            "y": 345.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1305.0,
+            "y": 375.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1305.0,
+            "y": 405.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1245.0,
+            "y": 285.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1245.0,
+            "y": 315.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1245.0,
+            "y": 345.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1245.0,
+            "y": 375.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1245.0,
+            "y": 405.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1275.0,
+            "y": 105.0,
+            "155": "2"
+        },
+        {
+            "objectId": 5,
+            "x": 1275.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1275.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1275.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1275.0,
+            "y": 285.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1275.0,
+            "y": 315.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1275.0,
+            "y": 345.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1275.0,
+            "y": 375.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1275.0,
+            "y": 405.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 18,
+            "x": 855.0,
+            "y": 109.0,
+            "155": "3"
+        },
+        {
+            "objectId": 19,
+            "x": 975.0,
+            "y": 109.0,
+            "155": "3"
+        },
+        {
+            "objectId": 20,
+            "x": 1063.0,
+            "y": 45.0,
+            "155": "3",
+            "rotation": 90.0
+        },
+        {
+            "objectId": 19,
+            "x": 761.0,
+            "y": 45.0,
+            "155": "3",
+            "rotation": 270.0
+        },
+        {
+            "objectId": 18,
+            "x": 975.0,
+            "y": 191.0,
+            "155": "3",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 19,
+            "x": 847.0,
+            "y": 191.0,
+            "155": "3",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 20,
+            "x": 1063.0,
+            "y": 255.0,
+            "155": "3",
+            "rotation": 90.0
+        },
+        {
+            "objectId": 20,
+            "x": 767.0,
+            "y": 255.0,
+            "155": "3",
+            "rotation": 270.0
+        },
+        {
+            "objectId": 20,
+            "x": 1275.0,
+            "y": 163.0,
+            "155": "3"
+        },
+        {
+            "objectId": 18,
+            "x": 1211.0,
+            "y": 75.0,
+            "155": "3",
+            "rotation": 270.0
+        },
+        {
+            "objectId": 18,
+            "x": 1339.0,
+            "y": 75.0,
+            "155": "3",
+            "rotation": 90.0
+        },
+        {
+            "objectId": 20,
+            "x": 1275.0,
+            "y": 227.5,
+            "155": "3",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 18,
+            "x": 1339.0,
+            "y": 315.5,
+            "155": "3",
+            "rotation": 90.0
+        },
+        {
+            "objectId": 18,
+            "x": 1211.0,
+            "y": 315.5,
+            "155": "3",
+            "rotation": 270.0
+        },
+        {
+            "objectId": 1,
+            "x": 1485.0,
+            "y": 75.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 1515.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1545.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1545.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1545.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1545.0,
+            "y": -15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1545.0,
+            "y": -45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1485.0,
+            "y": -45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1485.0,
+            "y": -15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1485.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1485.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1485.0,
+            "y": 195.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 1515.0,
+            "y": 195.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1545.0,
+            "y": 195.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1545.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1545.0,
+            "y": 255.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1545.0,
+            "y": 285.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1545.0,
+            "y": 315.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1545.0,
+            "y": 345.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1485.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1485.0,
+            "y": 255.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1485.0,
+            "y": 285.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1485.0,
+            "y": 315.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1485.0,
+            "y": 345.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1515.0,
+            "y": 45.0,
+            "155": "2"
+        },
+        {
+            "objectId": 5,
+            "x": 1515.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1515.0,
+            "y": -15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1515.0,
+            "y": -45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1515.0,
+            "y": 225.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1515.0,
+            "y": 255.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1515.0,
+            "y": 285.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1515.0,
+            "y": 315.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1515.0,
+            "y": 345.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 20,
+            "x": 1515.0,
+            "y": 103.0,
+            "155": "3"
+        },
+        {
+            "objectId": 18,
+            "x": 1451.0,
+            "y": 15.0,
+            "155": "3",
+            "rotation": 270.0
+        },
+        {
+            "objectId": 18,
+            "x": 1579.0,
+            "y": 15.0,
+            "155": "3",
+            "rotation": 90.0
+        },
+        {
+            "objectId": 20,
+            "x": 1515.0,
+            "y": 167.5,
+            "155": "3",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 18,
+            "x": 1579.0,
+            "y": 255.5,
+            "155": "3",
+            "rotation": 90.0
+        },
+        {
+            "objectId": 18,
+            "x": 1451.0,
+            "y": 255.5,
+            "155": "3",
+            "rotation": 270.0
+        },
+        {
+            "objectId": 1,
+            "x": 1755.0,
+            "y": 105.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 1755.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1785.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1815.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1845.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1875.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1905.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1935.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2055.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2055.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1785.0,
+            "y": 75.0,
+            "155": "2"
+        },
+        {
+            "objectId": 5,
+            "x": 1785.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1815.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1845.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1875.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1905.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1935.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 2025.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 2025.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1935.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1905.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1875.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1845.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1815.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 18,
+            "x": 1815.0,
+            "y": 139.0,
+            "155": "3"
+        },
+        {
+            "objectId": 19,
+            "x": 1995.0,
+            "y": 139.0,
+            "155": "3"
+        },
+        {
+            "objectId": 20,
+            "x": 2083.0,
+            "y": 59.0,
+            "155": "3",
+            "rotation": 90.0
+        },
+        {
+            "objectId": 19,
+            "x": 1721.0,
+            "y": 59.0,
+            "155": "3",
+            "rotation": 270.0
+        },
+        {
+            "objectId": 1,
+            "x": 1755.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2055.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1785.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 2025.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1935.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1905.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1875.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1845.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1815.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1965.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1995.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1995.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1995.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2055.0,
+            "y": 224.999969,
+            "155": "2",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 1,
+            "x": 2055.0,
+            "y": 254.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2055.0,
+            "y": 284.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2025.0,
+            "y": 224.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1995.0,
+            "y": 224.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1965.0,
+            "y": 224.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1935.0,
+            "y": 224.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1905.0,
+            "y": 224.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1875.0,
+            "y": 224.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1785.0,
+            "y": 224.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1755.0,
+            "y": 225.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1755.0,
+            "y": 255.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1755.0,
+            "y": 284.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 2025.0,
+            "y": 254.999969,
+            "155": "2",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 5,
+            "x": 2025.0,
+            "y": 284.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1995.0,
+            "y": 254.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1965.0,
+            "y": 254.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1935.0,
+            "y": 254.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1905.0,
+            "y": 254.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1875.0,
+            "y": 254.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1785.0,
+            "y": 255.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1785.0,
+            "y": 284.999939,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1875.0,
+            "y": 284.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1905.0,
+            "y": 284.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1935.0,
+            "y": 284.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1965.0,
+            "y": 284.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1995.0,
+            "y": 284.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 18,
+            "x": 1995.0,
+            "y": 190.999969,
+            "155": "3",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 19,
+            "x": 1815.0,
+            "y": 190.999969,
+            "155": "3",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 20,
+            "x": 1727.0,
+            "y": 270.999969,
+            "155": "3",
+            "rotation": 270.0
+        },
+        {
+            "objectId": 19,
+            "x": 2089.0,
+            "y": 270.999969,
+            "155": "3",
+            "rotation": 90.0
+        },
+        {
+            "objectId": 1,
+            "x": 2055.0,
+            "y": 314.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1755.0,
+            "y": 314.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 2025.0,
+            "y": 314.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1785.0,
+            "y": 315.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1875.0,
+            "y": 314.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1905.0,
+            "y": 314.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1935.0,
+            "y": 314.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1965.0,
+            "y": 314.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1995.0,
+            "y": 314.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1845.0,
+            "y": 224.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1815.0,
+            "y": 224.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1845.0,
+            "y": 254.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1815.0,
+            "y": 254.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1815.0,
+            "y": 284.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1845.0,
+            "y": 284.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1815.0,
+            "y": 315.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1845.0,
+            "y": 314.999969,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1755.0,
+            "y": 135.0,
+            "155": "2"
+        },
+        {
+            "objectId": 8,
+            "x": 1785.0,
+            "y": 135.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1815.0,
+            "y": 135.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1845.0,
+            "y": 135.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1875.0,
+            "y": 135.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1905.0,
+            "y": 135.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1935.0,
+            "y": 135.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1965.0,
+            "y": 135.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 2055.0,
+            "y": 195.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 2025.0,
+            "y": 195.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1995.0,
+            "y": 195.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1965.0,
+            "y": 195.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1935.0,
+            "y": 195.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1905.0,
+            "y": 195.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1875.0,
+            "y": 195.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1845.0,
+            "y": 195.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1815.0,
+            "y": 195.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1785.0,
+            "y": 195.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1755.0,
+            "y": 195.0,
+            "155": "2",
+            "rotation": 180.0,
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1715,
+            "x": 1725.0,
+            "y": 2.5,
+            "155": "4"
+        },
+        {
+            "objectId": 1715,
+            "x": 1695.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1665.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1635.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1605.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1575.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1455.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1425.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1395.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1365.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1335.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1065.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1095.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1125.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1155.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1185.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1215.0,
+            "y": 2.5,
+            "155": "4",
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1065.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1095.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1125.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1155.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1185.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1215.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1335.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1365.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1395.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1425.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1455.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1575.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1605.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1635.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1665.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1695.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1715,
+            "x": 1725.0,
+            "y": 297.5,
+            "155": "4",
+            "rotation": 180.0,
+            "mainColorChannelId": 1010
+        },
+        {
+            "objectId": 1721,
+            "x": 765.0,
+            "y": 4.0,
+            "155": "4"
+        },
+        {
+            "objectId": 1720,
+            "x": 765.0,
+            "y": 296.0,
+            "155": "4",
+            "rotation": 180.0
+        },
+        {
+            "objectId": 12,
+            "x": 2085.0,
+            "y": 165.0,
+            "155": "1",
+            "interactible": true
+        },
+        {
+            "objectId": 1,
+            "x": 2055.0,
+            "y": 75.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 11,
+            "x": 1275.0,
+            "y": 195.0,
+            "155": "1",
+            "interactible": true
+        },
+        {
+            "objectId": 10,
+            "x": 1515.0,
+            "y": 135.0,
+            "155": "1",
+            "interactible": true
+        },
+        {
+            "objectId": 5,
+            "x": 1965.0,
+            "y": 45.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 5,
+            "x": 1965.0,
+            "y": 15.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1755.0,
+            "y": 45.0,
+            "155": "2"
+        },
+        {
+            "objectId": 1,
+            "x": 1965.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 1995.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 1,
+            "x": 2025.0,
+            "y": 105.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 2025.0,
+            "y": 135.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 1995.0,
+            "y": 135.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        },
+        {
+            "objectId": 8,
+            "x": 2055.0,
+            "y": 135.0,
+            "155": "2",
+            "mainColorChannelId": 1004
+        }
+    ]
+}

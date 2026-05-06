@@ -6,6 +6,7 @@ const { ccclass } = _decorator;
 export class ADBaseLayer extends Component {
 
     protected initialized: boolean = false;
+    public visible = true;
 
     // default values
     private params: any[] = [];
@@ -58,6 +59,8 @@ export class ADBaseLayer extends Component {
         uiOpacity.opacity = visible
             ? 255
             : 0;
+
+        this.visible = visible;
     }
 
     // protected update(dt: number): void {

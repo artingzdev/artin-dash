@@ -284,36 +284,41 @@ export function fixSpriteScale(node: Node, multiplier: number): void {
         );
 }
 
-export function slerp2D(angle1: number, angle2: number, t: number): number {
-        const cosA = Math.cos(angle1 * 0.5);
-        const sinA = Math.sin(angle1 * 0.5);
-        let cosB   = Math.cos(angle2 * 0.5);
-        let sinB   = Math.sin(angle2 * 0.5);
+export function slerpAngle(angle1: number, angle2: number, t: number): number {
+    t = Math.max(0, Math.min(1, t));
+    if (t <= 0) return angle1;
+    if (t >= 1) return angle2;
 
-        let dot = sinB * sinA + cosB * cosA;
+    const cos1 = Math.cos(angle1 * 0.5);
+    const sin1 = Math.sin(angle1 * 0.5);
+    let cos2 = Math.cos(angle2 * 0.5);
+    let sin2 = Math.sin(angle2 * 0.5);
 
-        if (dot < 0.0) {
-                dot  = -dot;
-                sinB = -sinB;
-                cosB = -cosB;
+    let dot = sin2 * sin1 + cos2 * cos1;
+    if (dot < 0.0) {
+        dot = -dot;
+        sin2 = -sin2;
+        cos2 = -cos2;
+    }
+
+    dot = Math.max(-1, Math.min(1, dot));
+
+    let scale0 = 1.0 - t;
+    let scale1 = t;
+    if (0.0001 < 1.0 - dot) {
+        const theta = Math.acos(dot);
+        const sinTheta = Math.sin(theta);
+
+        if (Math.abs(sinTheta) > 0.000001) {
+            scale0 = Math.sin((1.0 - t) * theta) / sinTheta;
+            scale1 = Math.sin(t * theta) / sinTheta;
         }
+    }
 
-        let scaleA = 1.0 - t;
-        let scaleB = t;
-
-        if (0.0001 < 1.0 - dot) {
-                const theta    = Math.acos(dot);
-                const sinTheta = Math.sin(theta);
-                scaleA = Math.sin(scaleA * theta) / sinTheta;
-                scaleB = Math.sin(theta * t)      / sinTheta;
-        }
-        
-        const result = Math.atan2(
-                sinA * scaleA + scaleB * sinB,
-                cosA * scaleA + scaleB * cosB
-        );
-
-        return result * 2.0;
+    return Math.atan2(
+        sin1 * scale0 + scale1 * sin2,
+        cos1 * scale0 + scale1 * cos2
+    ) * 2.0;
 }
 
 export function drawPolygon(gfx: Graphics, radius: number, sides: number): void {
@@ -327,3 +332,5 @@ export function drawPolygon(gfx: Graphics, radius: number, sides: number): void 
 
 export const sinDeg = (deg: number) => Math.sin(deg * Math.PI / 180);
 export const cosDeg = (deg: number) => Math.cos(deg * Math.PI / 180);
+export const toRad = Math.fround(0.017453292);
+export const toDeg = Math.fround(57.29578);

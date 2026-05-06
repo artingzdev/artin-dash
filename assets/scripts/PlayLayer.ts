@@ -1,15 +1,19 @@
-import { _decorator, AudioSource, clamp, Component, Label, view } from 'cc';
+import { _decorator, AudioSource, clamp, Component, Label, view, Node, ParticleSystem, ParticleSystem2D, Color } from 'cc';
 import { ADGroundLayer } from './ADGroundLayer';
 import { getCachedMp3, settings } from './utils';
 import { ADBackgroundLayer } from './ADBackgroundLayer';
 import { ADMGLayer } from './ADMGLayer';
 import { LevelManager } from './LevelManager';
 import { PlayerObject } from './PlayerObject';
+import { CameraController } from './CameraController';
+import { ColorChannelManager } from './ColorChannelManager';
 const { ccclass, property } = _decorator;
 
 // play layer main script
 @ccclass('PlayLayer')
 export class PlayLayer extends Component {
+
+    private unbindGlitter: (() => void) | null = null;
 
     @property(AudioSource)
     musicSource: AudioSource = null!;
@@ -20,10 +24,16 @@ export class PlayLayer extends Component {
     @property(Label)
     percentageLabel: Label = null!;
 
-    private static instance: PlayLayer = null;
+    @property(ParticleSystem2D)
+    glitterEffect: ParticleSystem2D = null!;
+
+    @property(Node)
+    backgroundEffectlayer: Node = null!;
+
+    private static _instance: PlayLayer = null;
 
     public static player1: PlayerObject = null;
-    public levelName: string = 'polargeistEdit';
+    public levelName: string = 'backOnTrackNoCoins';
     public levelMusicName: string = 'CantLetGo';
 
     private musicEnabled: boolean = false;
@@ -35,24 +45,31 @@ export class PlayLayer extends Component {
 
     public static percentage: number = 0;
 
+    public groundLayer: ADGroundLayer = null!;
+    public ceilingLayer: ADGroundLayer = null!;
+    public backgroundLayer: ADBackgroundLayer = null!;
+    public middlegroundLayer: ADMGLayer = null!;
+
     protected onLoad(): void {
-        PlayLayer.instance = this;
+        PlayLayer._instance = this;
+        this.unbindGlitter = this.bindToChannelGlitter(ColorChannelManager.P1);
     }
 
-    public static get(): PlayLayer {
-        return PlayLayer.instance;
+    public static get instance(): PlayLayer {
+        return PlayLayer._instance;
     }
 
     async start() {
         const visibleSize = view.getVisibleSize();
 
         // create the grounds, background, and middleground
-        const groundLayer = ADGroundLayer.create(1, false, 1);
-        const ceilingLayer = ADGroundLayer.create(1, true, 1);
-        ceilingLayer.setPosition(0, visibleSize.height - settings.defaultCameraOffsetY);
-        ceilingLayer.setVisible(false);
-        const backgroundLayer = ADBackgroundLayer.create(1);
-        const mgLayer = ADMGLayer.create(0);
+        this.groundLayer = ADGroundLayer.create(1, false, 1);
+        this.ceilingLayer = ADGroundLayer.create(1, true, 1);
+        this.ceilingLayer.setPosition(0, visibleSize.height - settings.defaultCameraOffsetY);
+        this.ceilingLayer.setVisible(false);
+        this.ceilingLayer.setScreenY(view.getVisibleSize().height);
+        this.backgroundLayer = ADBackgroundLayer.create(1);
+        this.middlegroundLayer = ADMGLayer.create(0);
 
         // add the player
         PlayLayer.player1 = PlayerObject.create();
@@ -69,7 +86,7 @@ export class PlayLayer extends Component {
                 PlayerObject.instance.canStartPlaying = true;
             }, this.levelStartDelay);
         });
-
+        PlayLayer.player1.updateTimeMod();
     }
 
     public async prepareLevelMusic(): Promise<void> {
@@ -139,7 +156,42 @@ export class PlayLayer extends Component {
         }
     }
 
+    protected bindToChannelGlitter(id: number): () => void {
+                return ColorChannelManager.instance.bindTo(id, (color) => {
+                        this.changeGlitterEffectColor(color);
+                });
+    }
+
+    protected changeGlitterEffectColor(color: Color): void {
+        this.glitterEffect.color.set(color.r, color.g, color.b, color.a);
+    }
+
+    public activateGlitterEffect(): void {
+        const posVarX = view.getVisibleSize().width * 0.5;
+        this.glitterEffect.posVar.set(
+            posVarX,
+            this.glitterEffect.posVar.y
+        )
+
+        this.glitterEffect.resetSystem();
+    }
+
+    public deactivateGlitterEffect(): void {
+        this.glitterEffect.stopSystem();
+    }
+
+    private updateBackgroundEffectPosition(): void {
+        const camX = CameraController.getPositionX();
+        const camY = CameraController.getPositionY();
+        this.backgroundEffectlayer.setPosition(camX, camY);
+    }
+
     protected lateUpdate(dt: number): void {
         this.updatePercentage();
+        this.updateBackgroundEffectPosition();
+    }
+
+    protected onDestroy(): void {
+        this.unbindGlitter?.();
     }
 }
